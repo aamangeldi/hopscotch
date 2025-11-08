@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
 @theme {
   --color-retro-yellow: #FFD700;
@@ -8,14 +9,14 @@
   --color-retro-purple: #9B59B6;
   --color-retro-green: #2ECC71;
 
-  --font-family-comic: "Comic Sans MS", cursive, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Code", "Consolas", "Monaco", monospace;
 }
 
 @layer base {
   body {
     background: black;
     min-height: 100vh;
-    font-family: var(--font-family-comic);
+    font-family: var(--font-family-mono);
     color: white;
   }
 }

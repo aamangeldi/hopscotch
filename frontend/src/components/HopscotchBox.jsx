@@ -1,20 +1,33 @@
 import { useState } from 'react'
-import ResultCard from './ResultCard'
+import ResultBlock from './ResultBlock'
 
-const HopscotchBox = ({ box, isActive, onSearch, onFeedback }) => {
+const HopscotchBox = ({ box, isActive, isLoading, onSearch, onFeedback }) => {
   const [inputValue, setInputValue] = useState('')
   const [showInput, setShowInput] = useState(box.type === 'input')
+  const [newSearchValue, setNewSearchValue] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (inputValue.trim()) {
-      onSearch(inputValue, box.id)
+    if (inputValue.trim() && !isLoading) {
+      // For input boxes, use current box ID; for results, create new box
+      const targetBoxId = box.type === 'input' ? box.id : box.id + 1
+      onSearch(inputValue, targetBoxId)
       setInputValue('')
-      setShowInput(false)
+      // Don't collapse during loading - keep form visible
+      // setShowInput(false)
     }
   }
 
-  const colors = ['border-retro-pink', 'border-retro-blue', 'border-retro-orange', 'border-retro-purple', 'border-retro-green', 'border-retro-yellow']
+  const handleNewSearchSubmit = (e) => {
+    e.preventDefault()
+    if (newSearchValue.trim() && !isLoading) {
+      const targetBoxId = box.id + 1
+      onSearch(newSearchValue, targetBoxId)
+      setNewSearchValue('')
+    }
+  }
+
+  const colors = ['border-retro-blue', 'border-retro-orange', 'border-retro-purple', 'border-retro-green', 'border-retro-yellow', 'border-retro-pink']
   const colorClass = colors[(box.id - 1) % colors.length]
 
   if (box.type === 'input' && !showInput) {
@@ -23,18 +36,21 @@ const HopscotchBox = ({ box, isActive, onSearch, onFeedback }) => {
         className={`
           ${colorClass}
           bg-black
-          w-64 h-64 rounded-3xl
+          w-80 h-80
           flex items-center justify-center
           text-9xl font-bold text-white
           transform transition-all duration-300
           border-4
           cursor-pointer
           hover:scale-105
-          ${isActive ? 'animate-bounce' : ''}
+          relative overflow-hidden
         `}
         onClick={() => setShowInput(true)}
       >
-        {box.id}
+        {isActive && (
+          <div className="absolute inset-0 animate-pulse bg-white/5"></div>
+        )}
+        <span className="relative z-10">{box.id}</span>
       </div>
     )
   }
@@ -45,79 +61,115 @@ const HopscotchBox = ({ box, isActive, onSearch, onFeedback }) => {
         className={`
           ${colorClass}
           bg-black
-          w-96 rounded-3xl p-8
+          w-[600px] max-w-[90vw] p-8
           transform transition-all duration-300
           border-4
+          relative
         `}
       >
-        <div className="text-6xl font-bold text-white text-center mb-6">
-          {box.id}
+        {isLoading && (
+          <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div className="flex flex-col items-center gap-4">
+              <div className={`w-16 h-16 border-4 ${colorClass} border-t-transparent rounded-full animate-spin`}></div>
+              <div className="text-white text-xl font-bold">Searching...</div>
+            </div>
+          </div>
+        )}
+
+        <div className={isLoading ? 'opacity-30' : ''}>
+          <div className="text-3xl font-bold text-white text-center mb-6">
+            {box.id}
+          </div>
+          <form onSubmit={handleSubmit}>
+            <textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="What are you looking for?"
+              autoFocus
+              rows={3}
+              disabled={isLoading}
+              className="w-full px-6 py-4 text-lg bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none"
+            />
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full mt-4 px-6 py-4 bg-black text-white text-xl font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              Hop
+            </button>
+          </form>
         </div>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="What are you looking for?"
-            autoFocus
-            className="w-full px-6 py-4 text-2xl rounded-2xl bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-comic placeholder:text-white/50"
-          />
-          <button
-            type="submit"
-            className={`w-full mt-4 px-6 py-4 bg-black text-white text-2xl font-bold rounded-2xl hover:bg-white/10 transition-colors border-2 ${colorClass}`}
-          >
-            HOP!
-          </button>
-        </form>
       </div>
     )
   }
 
   if (box.type === 'results') {
     return (
-      <div className="w-full max-w-6xl">
-        <div className={`${colorClass} bg-black w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-bold text-white border-4 mx-auto mb-8`}>
-          {box.id}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {box.results?.map((result, index) => (
-            <ResultCard
-              key={index}
-              result={result}
-              onFeedback={(feedback) => onFeedback(result, feedback, box.id)}
-              colorClass={colors[index % colors.length]}
-            />
-          ))}
-        </div>
-        <div className="flex justify-center">
-          <button
-            onClick={() => setShowInput(true)}
-            className="px-8 py-4 bg-black text-white text-xl font-bold rounded-2xl hover:bg-white/10 transition-colors border-2 border-white/50"
-          >
-            Try different search
-          </button>
-        </div>
+      <div className="w-full max-w-3xl relative">
+        {/* 2x2 Grid Container - Made smaller to fit on screen */}
+        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[70vh] relative`}>
+          {isLoading && (
+            <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+              <div className="flex flex-col items-center gap-4">
+                <div className={`w-16 h-16 border-4 ${colorClass} border-t-transparent rounded-full animate-spin`}></div>
+                <div className="text-white text-xl font-bold">Searching...</div>
+              </div>
+            </div>
+          )}
 
-        {showInput && (
-          <div className={`${colorClass} bg-black max-w-md mx-auto mt-8 rounded-3xl p-8 border-4`}>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="What are you looking for?"
-                autoFocus
-                className="w-full px-6 py-4 text-xl rounded-2xl bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-comic placeholder:text-white/50"
-              />
-              <button
-                type="submit"
-                className={`w-full mt-4 px-6 py-4 bg-black text-white text-xl font-bold rounded-2xl hover:bg-white/10 transition-colors border-2 ${colorClass}`}
-              >
-                HOP!
-              </button>
-            </form>
+          <div className={`grid grid-cols-2 grid-rows-2 w-full h-full ${isLoading ? 'opacity-30' : ''}`}>
+            {/* Top-left: Result 1 */}
+            <div className="border-r-2 border-b-2 border-white/20">
+              {box.results?.[0] && (
+                <ResultBlock
+                  result={box.results[0]}
+                  onFeedback={(feedback) => onFeedback(box.results[0], feedback, box.id)}
+                />
+              )}
+            </div>
+
+            {/* Top-right: Result 2 */}
+            <div className="border-b-2 border-white/20">
+              {box.results?.[1] && (
+                <ResultBlock
+                  result={box.results[1]}
+                  onFeedback={(feedback) => onFeedback(box.results[1], feedback, box.id)}
+                />
+              )}
+            </div>
+
+            {/* Bottom-left: Result 3 */}
+            <div className="border-r-2 border-white/20">
+              {box.results?.[2] && (
+                <ResultBlock
+                  result={box.results[2]}
+                  onFeedback={(feedback) => onFeedback(box.results[2], feedback, box.id)}
+                />
+              )}
+            </div>
+
+            {/* Bottom-right: New prompt input */}
+            <div className="flex items-center justify-center p-4">
+              <form onSubmit={handleNewSearchSubmit} className="w-full h-full flex flex-col justify-center">
+                <textarea
+                  value={newSearchValue}
+                  onChange={(e) => setNewSearchValue(e.target.value)}
+                  placeholder="or something else?"
+                  rows={2}
+                  disabled={isLoading}
+                  className="w-full px-3 py-2 text-sm bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none mb-2"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full px-3 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  Hop
+                </button>
+              </form>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     )
   }

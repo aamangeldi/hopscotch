@@ -68,7 +68,7 @@ A playful, cartoon-style search interface where you hop through numbered boxes t
 ## Usage
 
 1. Click on box number 1 to start
-2. Type what you're looking for and hit "HOP!"
+2. Type what you're looking for and hit "Hop"
 3. View 3 visual results in box 2
 4. For each result, choose:
    - "Similar" - get more results like this
@@ -119,7 +119,7 @@ After deploying the backend, update the API URL in `frontend/src/App.jsx` from `
   - React 19
   - Vite 7
   - Tailwind CSS 4
-  - Comic Sans MS font (for that retro cartoon feel!)
+  - JetBrains Mono font (for that futuristic programmer feel!)
 
 - **Backend**
   - FastAPI
