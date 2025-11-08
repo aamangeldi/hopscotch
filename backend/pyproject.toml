@@ -1,0 +1,12 @@
+[project]
+name = "hopscotch-backend"
+version = "0.1.0"
+description = "Hopscotch backend API powered by FastAPI and OpenAI"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.5",
+    "uvicorn[standard]>=0.32.1",
+    "openai>=1.55.3",
+    "pydantic>=2.10.3",
+    "python-dotenv>=1.0.1",
+]
