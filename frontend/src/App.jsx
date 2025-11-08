@@ -92,7 +92,7 @@ function App() {
                 box={box}
                 isActive={box.id === currentBox}
                 isLatest={isLatestBox}
-                isLoading={isLoading && box.id === currentBox}
+                isLoading={isLoading && isLatestBox}
                 onSearch={handleSearch}
                 onFeedback={handleFeedback}
               />

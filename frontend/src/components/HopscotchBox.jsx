@@ -30,19 +30,6 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
   const colors = ['border-retro-blue', 'border-retro-orange', 'border-retro-purple', 'border-retro-green', 'border-retro-yellow', 'border-retro-pink']
   const colorClass = colors[(box.id - 1) % colors.length]
 
-  if (box.type === 'input' && !showInput) {
-    return (
-      <div className="w-full max-w-5xl relative">
-        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative flex items-center justify-center cursor-pointer hover:scale-105 transition-transform`} onClick={() => setShowInput(true)}>
-          {isActive && (
-            <div className="absolute inset-0 animate-pulse bg-white/5"></div>
-          )}
-          <span className="text-[20rem] font-bold text-white relative z-10">{box.id}</span>
-        </div>
-      </div>
-    )
-  }
-
   if (box.type === 'input' && showInput) {
     return (
       <div className="w-full max-w-5xl relative">
