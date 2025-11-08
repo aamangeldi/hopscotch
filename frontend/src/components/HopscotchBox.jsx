@@ -1,10 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ResultBlock from './ResultBlock'
 
 const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback }) => {
   const [inputValue, setInputValue] = useState('')
-  const [showInput, setShowInput] = useState(box.type === 'input')
+  const [showInput, setShowInput] = useState(false)
   const [newSearchValue, setNewSearchValue] = useState('')
+
+  // Auto-flip the first input box after a delay
+  useEffect(() => {
+    if (box.type === 'input' && box.id === 1 && !showInput) {
+      const timer = setTimeout(() => {
+        setShowInput(true)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [box.type, box.id, showInput])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -30,9 +40,32 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
   const colors = ['border-retro-blue', 'border-retro-orange', 'border-retro-purple', 'border-retro-green', 'border-retro-yellow', 'border-retro-pink']
   const colorClass = colors[(box.id - 1) % colors.length]
 
-  if (box.type === 'input' && showInput) {
+  if (box.type === 'input') {
     return (
-        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative`}>
+      <div className="relative w-full aspect-square max-h-[85vh]" style={{ perspective: '1000px' }}>
+        <div
+          className="relative w-full h-full transition-transform duration-700"
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: showInput ? 'rotateY(180deg)' : 'rotateY(0deg)'
+          }}
+        >
+          {/* Front: Number */}
+          <div
+            className={`${colorClass} bg-black border-4 absolute inset-0 flex items-center justify-center`}
+            style={{ backfaceVisibility: 'hidden' }}
+          >
+            <span className="text-[20rem] font-bold text-white">{box.id}</span>
+          </div>
+
+          {/* Back: Input Form */}
+          <div
+            className={`${colorClass} bg-black border-4 absolute inset-0`}
+            style={{
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)'
+            }}
+          >
           {isLoading && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
               <div className="flex flex-col items-center gap-4">
@@ -43,9 +76,6 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
           )}
 
           <div className={`w-full h-full flex flex-col items-center justify-center p-16 ${isLoading ? 'opacity-30' : ''}`}>
-            <div className="text-6xl font-bold text-white text-center mb-12">
-              {box.id}
-            </div>
             <form onSubmit={handleSubmit} className="w-full max-w-3xl">
               <textarea
                 value={inputValue}
@@ -65,7 +95,9 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
               </button>
             </form>
           </div>
+          </div>
         </div>
+      </div>
     )
   }
 
