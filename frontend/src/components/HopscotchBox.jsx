@@ -32,8 +32,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
 
   if (box.type === 'input' && showInput) {
     return (
-      <div className="w-full max-w-5xl relative">
-        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative flex flex-col items-center justify-center p-16`}>
+        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative`}>
           {isLoading && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
               <div className="flex flex-col items-center gap-4">
@@ -43,7 +42,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
             </div>
           )}
 
-          <div className={`w-full flex flex-col items-center ${isLoading ? 'opacity-30' : ''}`}>
+          <div className={`w-full h-full flex flex-col items-center justify-center p-16 ${isLoading ? 'opacity-30' : ''}`}>
             <div className="text-6xl font-bold text-white text-center mb-12">
               {box.id}
             </div>
@@ -67,14 +66,11 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
             </form>
           </div>
         </div>
-      </div>
     )
   }
 
   if (box.type === 'results') {
     return (
-      <div className="w-full max-w-5xl relative">
-        {/* 2x2 Grid Container - Made to fit on screen */}
         <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative`}>
           {isLoading && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -138,7 +134,6 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
             </div>
           </div>
         </div>
-      </div>
     )
   }
 

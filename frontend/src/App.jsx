@@ -87,6 +87,7 @@ function App() {
             <div
               key={box.id}
               ref={(el) => boxRefs.current[box.id] = el}
+              className="w-full max-w-5xl"
             >
               <HopscotchBox
                 box={box}
