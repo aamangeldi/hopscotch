@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ResultBlock from './ResultBlock'
 
-const HopscotchBox = ({ box, isActive, isLoading, onSearch, onFeedback }) => {
+const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback }) => {
   const [inputValue, setInputValue] = useState('')
   const [showInput, setShowInput] = useState(box.type === 'input')
   const [newSearchValue, setNewSearchValue] = useState('')
@@ -32,72 +32,53 @@ const HopscotchBox = ({ box, isActive, isLoading, onSearch, onFeedback }) => {
 
   if (box.type === 'input' && !showInput) {
     return (
-      <div
-        className={`
-          ${colorClass}
-          bg-black
-          w-80 h-80
-          flex items-center justify-center
-          text-9xl font-bold text-white
-          transform transition-all duration-300
-          border-4
-          cursor-pointer
-          hover:scale-105
-          relative overflow-hidden
-        `}
-        onClick={() => setShowInput(true)}
-      >
-        {isActive && (
-          <div className="absolute inset-0 animate-pulse bg-white/5"></div>
-        )}
-        <span className="relative z-10">{box.id}</span>
+      <div className="w-full max-w-5xl relative">
+        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative flex items-center justify-center cursor-pointer hover:scale-105 transition-transform`} onClick={() => setShowInput(true)}>
+          {isActive && (
+            <div className="absolute inset-0 animate-pulse bg-white/5"></div>
+          )}
+          <span className="text-[20rem] font-bold text-white relative z-10">{box.id}</span>
+        </div>
       </div>
     )
   }
 
   if (box.type === 'input' && showInput) {
     return (
-      <div
-        className={`
-          ${colorClass}
-          bg-black
-          w-[600px] max-w-[90vw] p-8
-          transform transition-all duration-300
-          border-4
-          relative
-        `}
-      >
-        {isLoading && (
-          <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
-            <div className="flex flex-col items-center gap-4">
-              <div className={`w-16 h-16 border-4 ${colorClass} border-t-transparent rounded-full animate-spin`}></div>
-              <div className="text-white text-xl font-bold">Searching...</div>
+      <div className="w-full max-w-5xl relative">
+        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative flex flex-col items-center justify-center p-16`}>
+          {isLoading && (
+            <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+              <div className="flex flex-col items-center gap-4">
+                <div className={`w-16 h-16 border-4 ${colorClass} border-t-transparent rounded-full animate-spin`}></div>
+                <div className="text-white text-xl font-bold">Searching...</div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className={isLoading ? 'opacity-30' : ''}>
-          <div className="text-3xl font-bold text-white text-center mb-6">
-            {box.id}
+          <div className={`w-full flex flex-col items-center ${isLoading ? 'opacity-30' : ''}`}>
+            <div className="text-6xl font-bold text-white text-center mb-12">
+              {box.id}
+            </div>
+            <form onSubmit={handleSubmit} className="w-full max-w-3xl">
+              <textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="What are you looking for?"
+                autoFocus
+                rows={5}
+                disabled={isLoading}
+                className="w-full px-8 py-6 text-2xl bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none"
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`w-full mt-8 px-8 py-6 bg-black text-white text-2xl font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                Hop
+              </button>
+            </form>
           </div>
-          <form onSubmit={handleSubmit}>
-            <textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="What are you looking for?"
-              autoFocus
-              rows={3}
-              disabled={isLoading}
-              className="w-full px-6 py-4 text-lg bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none"
-            />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full mt-4 px-6 py-4 bg-black text-white text-xl font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              Hop
-            </button>
-          </form>
         </div>
       </div>
     )
@@ -105,9 +86,9 @@ const HopscotchBox = ({ box, isActive, isLoading, onSearch, onFeedback }) => {
 
   if (box.type === 'results') {
     return (
-      <div className="w-full max-w-3xl relative">
-        {/* 2x2 Grid Container - Made smaller to fit on screen */}
-        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[70vh] relative`}>
+      <div className="w-full max-w-5xl relative">
+        {/* 2x2 Grid Container - Made to fit on screen */}
+        <div className={`${colorClass} bg-black border-4 aspect-square w-full max-h-[85vh] relative`}>
           {isLoading && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
               <div className="flex flex-col items-center gap-4">
@@ -150,18 +131,18 @@ const HopscotchBox = ({ box, isActive, isLoading, onSearch, onFeedback }) => {
 
             {/* Bottom-right: New prompt input */}
             <div className="flex items-center justify-center p-4">
-              <form onSubmit={handleNewSearchSubmit} className="w-full h-full flex flex-col justify-center">
+              <form onSubmit={handleNewSearchSubmit} className={`w-full h-full flex flex-col justify-center ${!isLatest ? 'opacity-30' : ''}`}>
                 <textarea
                   value={newSearchValue}
                   onChange={(e) => setNewSearchValue(e.target.value)}
                   placeholder="or something else?"
                   rows={2}
-                  disabled={isLoading}
-                  className="w-full px-3 py-2 text-sm bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none mb-2"
+                  disabled={isLoading || !isLatest}
+                  className="w-full px-3 py-2 text-sm bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none mb-2 disabled:cursor-not-allowed"
                 />
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !isLatest}
                   className={`w-full px-3 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   Hop

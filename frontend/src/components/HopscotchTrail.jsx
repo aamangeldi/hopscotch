@@ -7,17 +7,15 @@ const HopscotchTrail = ({ boxes, currentBox, onJumpTo }) => {
         {boxes.map((box, index) => {
           const colorClass = colors[index % colors.length]
           const isActive = box.id === currentBox
-          const canJump = box.id < currentBox || box.id === currentBox
 
           return (
             <div key={box.id} className="flex items-center gap-1.5 flex-shrink-0">
               <button
-                onClick={() => canJump && onJumpTo(box.id)}
-                disabled={!canJump}
+                onClick={() => onJumpTo(box.id)}
                 className={`
                   ${colorClass}
                   ${isActive ? 'scale-95' : 'hover:scale-90'}
-                  ${!canJump ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
+                  cursor-pointer
                   w-12 h-12
                   flex items-center justify-center
                   text-lg font-bold text-white

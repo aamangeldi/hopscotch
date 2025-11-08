@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './App.css'
 import HopscotchTrail from './components/HopscotchTrail'
 import HopscotchBox from './components/HopscotchBox'
@@ -8,6 +8,14 @@ function App() {
   const [currentBox, setCurrentBox] = useState(1)
   const [context, setContext] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const boxRefs = useRef({})
+
+  // Scroll to current box when it changes
+  useEffect(() => {
+    if (boxRefs.current[currentBox]) {
+      boxRefs.current[currentBox].scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [currentBox])
 
   const handleSearch = async (query, boxId) => {
     setIsLoading(true)
@@ -64,13 +72,7 @@ function App() {
   }
 
   const jumpToBox = (boxId) => {
-    // Remove all boxes after the selected one
-    setBoxes(prev => prev.filter(box => box.id <= boxId))
-
-    // Reset context to only include items before this box
-    const boxIndex = boxId - 1
-    setContext(prev => prev.slice(0, Math.max(0, boxIndex - 1)))
-
+    // Just navigate to the box, don't delete anything
     setCurrentBox(boxId)
   }
 
@@ -79,16 +81,24 @@ function App() {
       <HopscotchTrail boxes={boxes} currentBox={currentBox} onJumpTo={jumpToBox} />
 
       <div className="mt-20 flex flex-col items-center gap-8">
-        {boxes.map((box) => (
-          <HopscotchBox
-            key={box.id}
-            box={box}
-            isActive={box.id === currentBox}
-            isLoading={isLoading && box.id === currentBox}
-            onSearch={handleSearch}
-            onFeedback={handleFeedback}
-          />
-        ))}
+        {boxes.map((box) => {
+          const isLatestBox = box.id === boxes[boxes.length - 1].id
+          return (
+            <div
+              key={box.id}
+              ref={(el) => boxRefs.current[box.id] = el}
+            >
+              <HopscotchBox
+                box={box}
+                isActive={box.id === currentBox}
+                isLatest={isLatestBox}
+                isLoading={isLoading && box.id === currentBox}
+                onSearch={handleSearch}
+                onFeedback={handleFeedback}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )
