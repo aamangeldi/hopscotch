@@ -9,11 +9,22 @@ function App() {
   const [context, setContext] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const boxRefs = useRef({})
+  const scrollContainerRef = useRef(null)
 
   // Scroll to current box when it changes
   useEffect(() => {
-    if (boxRefs.current[currentBox]) {
-      boxRefs.current[currentBox].scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (boxRefs.current[currentBox] && scrollContainerRef.current) {
+      const boxElement = boxRefs.current[currentBox]
+      const container = scrollContainerRef.current
+      const boxTop = boxElement.offsetTop
+      const boxHeight = boxElement.offsetHeight
+      const containerHeight = container.clientHeight
+      const headerHeight = 96 // Keep at 96px for scroll calculation
+
+      // Center the box in the visible viewport area (excluding header space)
+      const scrollTo = boxTop - (containerHeight - boxHeight) / 2 - headerHeight / 2
+
+      container.scrollTo({ top: scrollTo, behavior: 'smooth' })
     }
   }, [currentBox])
 
@@ -77,10 +88,10 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen overflow-hidden">
       <HopscotchTrail boxes={boxes} currentBox={currentBox} onJumpTo={jumpToBox} />
 
-      <div className="mt-20 flex flex-col items-center gap-8">
+      <div ref={scrollContainerRef} className="pt-28 pb-8 flex flex-col items-center gap-8 h-screen overflow-y-auto">
         {boxes.map((box) => {
           const isLatestBox = box.id === boxes[boxes.length - 1].id
           return (
