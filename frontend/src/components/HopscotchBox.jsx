@@ -70,7 +70,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
               <div className="flex flex-col items-center gap-4">
                 <div className={`w-16 h-16 border-4 ${colorClass} border-t-transparent rounded-full animate-spin`}></div>
-                <div className="text-white text-xl font-bold">Searching...</div>
+                <div className="text-white text-xl font-bold">searching...</div>
               </div>
             </div>
           )}
@@ -108,7 +108,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
               <div className="flex flex-col items-center gap-4">
                 <div className={`w-16 h-16 border-4 ${colorClass} border-t-transparent rounded-full animate-spin`}></div>
-                <div className="text-white text-xl font-bold">Searching...</div>
+                <div className="text-white text-xl font-bold">searching...</div>
               </div>
             </div>
           )}
