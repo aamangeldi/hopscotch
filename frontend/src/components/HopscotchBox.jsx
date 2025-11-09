@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ResultBlock from './ResultBlock'
+import { BOX_COLORS } from '../constants'
 
 const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback }) => {
   const [inputValue, setInputValue] = useState('')
@@ -37,8 +38,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
     }
   }
 
-  const colors = ['border-retro-blue', 'border-retro-orange', 'border-retro-purple', 'border-retro-green', 'border-retro-yellow', 'border-retro-pink']
-  const colorClass = colors[(box.id - 1) % colors.length]
+  const colorClass = BOX_COLORS[(box.id - 1) % BOX_COLORS.length]
 
   if (box.type === 'input') {
     return (

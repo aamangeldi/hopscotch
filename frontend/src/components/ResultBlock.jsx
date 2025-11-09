@@ -1,3 +1,5 @@
+import { SIMILAR_BUTTON_COLOR, DIFFERENT_BUTTON_COLOR } from '../constants'
+
 const ResultBlock = ({ result, onFeedback, isLatest }) => {
   return (
     <div className="w-full h-full flex flex-col bg-black">
@@ -25,7 +27,7 @@ const ResultBlock = ({ result, onFeedback, isLatest }) => {
           <button
             onClick={() => onFeedback('similar')}
             disabled={!isLatest}
-            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-retro-green disabled:cursor-not-allowed disabled:hover:bg-black"
+            className={`flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border ${SIMILAR_BUTTON_COLOR} disabled:cursor-not-allowed disabled:hover:bg-black`}
             title="Similar"
           >
             similar
@@ -33,7 +35,7 @@ const ResultBlock = ({ result, onFeedback, isLatest }) => {
           <button
             onClick={() => onFeedback('different')}
             disabled={!isLatest}
-            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-retro-orange disabled:cursor-not-allowed disabled:hover:bg-black"
+            className={`flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border ${DIFFERENT_BUTTON_COLOR} disabled:cursor-not-allowed disabled:hover:bg-black`}
             title="Different"
           >
             different
@@ -46,7 +48,7 @@ const ResultBlock = ({ result, onFeedback, isLatest }) => {
             className={`flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-white/30 text-center ${!isLatest ? 'cursor-not-allowed hover:bg-black' : ''}`}
             title="Visit"
           >
-            go to link
+            go to website
           </a>
         </div>
       </div>

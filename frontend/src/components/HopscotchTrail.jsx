@@ -1,11 +1,11 @@
-const HopscotchTrail = ({ boxes, currentBox, onJumpTo }) => {
-  const colors = ['border-retro-blue', 'border-retro-orange', 'border-retro-purple', 'border-retro-green', 'border-retro-yellow', 'border-retro-pink']
+import { BOX_COLORS } from '../constants'
 
+const HopscotchTrail = ({ boxes, currentBox, onJumpTo }) => {
   return (
     <div className="fixed top-0 left-0 right-0 bg-black border-b border-white/20 p-3 z-50">
       <div className="flex items-center gap-1.5 overflow-x-auto py-1">
         {boxes.map((box, index) => {
-          const colorClass = colors[index % colors.length]
+          const colorClass = BOX_COLORS[index % BOX_COLORS.length]
           const isActive = box.id === currentBox
 
           return (
@@ -26,7 +26,7 @@ const HopscotchTrail = ({ boxes, currentBox, onJumpTo }) => {
                 {box.id}
               </button>
               {index < boxes.length - 1 && (
-                <div className={`w-3 h-0.5 ${colors[index % colors.length]}`}></div>
+                <div className={`w-3 h-0.5 ${BOX_COLORS[index % BOX_COLORS.length]}`}></div>
               )}
             </div>
           )
