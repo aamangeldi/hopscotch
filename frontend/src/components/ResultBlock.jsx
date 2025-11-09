@@ -1,4 +1,4 @@
-const ResultBlock = ({ result, onFeedback }) => {
+const ResultBlock = ({ result, onFeedback, isLatest }) => {
   return (
     <div className="w-full h-full flex flex-col bg-black">
       {/* Image */}
@@ -14,7 +14,7 @@ const ResultBlock = ({ result, onFeedback }) => {
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col justify-between">
+      <div className={`p-4 flex flex-col justify-between ${!isLatest ? 'opacity-30' : ''}`}>
         <div className="mb-3">
           <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{result.title}</h3>
           <p className="text-white/60 text-xs line-clamp-2">{result.description}</p>
@@ -24,26 +24,29 @@ const ResultBlock = ({ result, onFeedback }) => {
         <div className="flex gap-2">
           <button
             onClick={() => onFeedback('similar')}
-            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-retro-green"
+            disabled={!isLatest}
+            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-retro-green disabled:cursor-not-allowed disabled:hover:bg-black"
             title="Similar"
           >
-            👍
+            similar
           </button>
           <button
             onClick={() => onFeedback('different')}
-            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-retro-orange"
+            disabled={!isLatest}
+            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-retro-orange disabled:cursor-not-allowed disabled:hover:bg-black"
             title="Different"
           >
-            👎
+            different
           </button>
           <a
-            href={result.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-white/30 text-center"
+            href={isLatest ? result.url : undefined}
+            target={isLatest ? "_blank" : undefined}
+            rel={isLatest ? "noopener noreferrer" : undefined}
+            onClick={(e) => !isLatest && e.preventDefault()}
+            className={`flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-white/30 text-center ${!isLatest ? 'cursor-not-allowed hover:bg-black' : ''}`}
             title="Visit"
           >
-            →
+            go to link
           </a>
         </div>
       </div>

@@ -68,11 +68,11 @@ A playful, cartoon-style search interface where you hop through numbered boxes t
 ## Usage
 
 1. Click on box number 1 to start
-2. Type what you're looking for and hit "Hop"
+2. Type what you're looking for and hit "hop"
 3. View 3 visual results in box 2
 4. For each result, choose:
-   - "Similar" - get more results like this
-   - "Different" - get results unlike this
+   - "similar" - get more results like this
+   - "different" - get results unlike this
    - Or try a different search
 5. Click any numbered box in the trail at the top to jump back
 6. Continue hopping through your discovery journey!

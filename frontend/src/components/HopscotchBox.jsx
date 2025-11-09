@@ -80,7 +80,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
               <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Let's discover..."
+                placeholder="let's discover something new..."
                 autoFocus
                 rows={5}
                 disabled={isLoading}
@@ -91,7 +91,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
                 disabled={isLoading}
                 className={`w-full mt-8 px-8 py-6 bg-black text-white text-2xl font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                Hop
+                hop
               </button>
             </form>
           </div>
@@ -120,6 +120,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
                 <ResultBlock
                   result={box.results[0]}
                   onFeedback={(feedback) => onFeedback(box.results[0], feedback, box.id)}
+                  isLatest={isLatest}
                 />
               )}
             </div>
@@ -130,6 +131,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
                 <ResultBlock
                   result={box.results[1]}
                   onFeedback={(feedback) => onFeedback(box.results[1], feedback, box.id)}
+                  isLatest={isLatest}
                 />
               )}
             </div>
@@ -140,6 +142,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
                 <ResultBlock
                   result={box.results[2]}
                   onFeedback={(feedback) => onFeedback(box.results[2], feedback, box.id)}
+                  isLatest={isLatest}
                 />
               )}
             </div>
@@ -160,7 +163,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
                   disabled={isLoading || !isLatest}
                   className={`w-full px-3 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
-                  Hop
+                  hop
                 </button>
               </form>
             </div>
