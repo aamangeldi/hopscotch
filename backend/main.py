@@ -99,6 +99,17 @@ class SearchRequest(BaseModel):
     context: Optional[List[dict]] = None  # Previous selections with similar/different
 
 
+class RecommendationItem(BaseModel):
+    title: str  # 2-5 words
+    description: str  # Max 100 characters
+    image_search_term: str  # 2-4 words
+    url: str
+
+
+class RecommendationsOutput(BaseModel):
+    recommendations: List[RecommendationItem]
+
+
 class ResultItem(BaseModel):
     title: str
     description: str
@@ -132,9 +143,9 @@ async def search(request: SearchRequest):
         based on the user's query. Each recommendation should be something visual and discoverable online
         (products, websites, concepts, places, activities, etc.).
 
-        Return ONLY a valid JSON array with exactly 3 objects, each with:
+        For each recommendation provide:
         - title: A catchy, short title (2-5 words)
-        - description: 1-2 sentence description that captures why this is interesting
+        - description: A very concise description (MAX 100 characters, be brief!)
         - image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
           Examples of GOOD search terms:
           * "japanese ramen bowl close up"
@@ -168,37 +179,25 @@ async def search(request: SearchRequest):
             user_prompt += context_str
             user_prompt += "\nUse this feedback to refine the recommendations."
 
-        # Call OpenAI API
+        # Call OpenAI API with structured outputs
         logger.info(f"Calling OpenAI API (gpt-4o-mini) with query: '{request.query}'")
-        response = client.chat.completions.create(
+        completion = client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.8,
-            response_format={"type": "json_object"}
+            response_format=RecommendationsOutput
         )
 
-        # Parse the response
-        import json
-        content = response.choices[0].message.content
-        data = json.loads(content)
-        logger.info(f"OpenAI API response received - tokens used: {response.usage.total_tokens}")
+        # Get structured output
+        output = completion.choices[0].message.parsed
+        logger.info(f"OpenAI API response received - tokens used: {completion.usage.total_tokens}")
+        logger.info(f"Received {len(output.recommendations)} structured recommendations")
 
-        # Handle both array and object with results key
-        if isinstance(data, list):
-            results = data
-        elif "results" in data:
-            results = data["results"]
-        else:
-            # Try to find any array in the response
-            for value in data.values():
-                if isinstance(value, list):
-                    results = value
-                    break
-            else:
-                results = []
+        # Extract results from structured output
+        results = [rec.model_dump() for rec in output.recommendations]
 
         # Convert image_search_term to actual image URLs from Pexels
         import asyncio
