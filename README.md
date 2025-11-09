@@ -34,10 +34,18 @@ A playful, cartoon-style search interface where you hop through numbered boxes t
    cp .env.example .env
    ```
 
-4. Add your OpenAI API key to `.env`:
+4. Add your API keys to `.env`:
    ```
    OPENAI_API_KEY=your_actual_api_key_here
+   PEXELS_API_KEY=your_pexels_api_key_here
    ```
+
+   **Getting API Keys:**
+   - **OpenAI**: Get your API key from [platform.openai.com](https://platform.openai.com/api-keys)
+   - **Pexels** (required for images):
+     1. Sign up at [pexels.com/api](https://www.pexels.com/api/)
+     2. Generate a free API key (200 requests/hour)
+     3. This is required to fetch relevant images for search results
 
 5. Run the backend (uv will automatically create venv and install dependencies):
    ```bash
@@ -111,7 +119,8 @@ After deploying the backend, update the API URL in `frontend/src/App.jsx` from `
 - No environment variables needed (API URL is hardcoded)
 
 ### Backend
-- `OPENAI_API_KEY` - Your OpenAI API key
+- `OPENAI_API_KEY` - Your OpenAI API key (required)
+- `PEXELS_API_KEY` - Your Pexels API key (required for relevant images)
 
 ## Tech Stack
 

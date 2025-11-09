@@ -5,8 +5,19 @@ from typing import List, Optional
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+import httpx
+import random
+import logging
 
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -19,8 +30,68 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API Keys
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("=" * 60)
+    logger.info("Hopscotch API Starting...")
+    logger.info(f"OpenAI API Key: {'Set' if OPENAI_API_KEY else 'Missing'}")
+    logger.info(f"Pexels API Key: {'Set' if PEXELS_API_KEY else 'Missing'}")
+    logger.info("=" * 60)
+
+
+async def fetch_image_from_pexels(search_term: str) -> str:
+    """
+    Fetch a high-quality image URL from Pexels based on search term.
+    Returns the most relevant image for the given search term.
+    """
+    if not PEXELS_API_KEY:
+        logger.error("PEXELS_API_KEY not found in environment variables")
+        raise ValueError("PEXELS_API_KEY is required. Get your free API key at https://www.pexels.com/api/")
+
+    logger.info(f"Fetching image from Pexels for: '{search_term}'")
+
+    async with httpx.AsyncClient() as http_client:
+        response = await http_client.get(
+            "https://api.pexels.com/v1/search",
+            headers={"Authorization": PEXELS_API_KEY},
+            params={
+                "query": search_term,
+                "per_page": 5,  # Get top 5 most relevant results
+                "orientation": "landscape"
+            },
+            timeout=10.0
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            photos = data.get("photos", [])
+            if photos:
+                # Use the first (most relevant) photo instead of random
+                photo = photos[0]
+                image_url = photo["src"]["large"]
+                logger.info(f"Found image for '{search_term}': {photo['photographer']} - {image_url[:50]}...")
+                return image_url
+            else:
+                # No photos found for this search term
+                logger.warning(f"No images found on Pexels for: '{search_term}'")
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No images found for '{search_term}' on Pexels"
+                )
+        else:
+            logger.error(f"Pexels API error (status {response.status_code}): {response.text[:200]}")
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Pexels API error: {response.text}"
+            )
 
 
 class SearchRequest(BaseModel):
@@ -49,21 +120,41 @@ async def search(request: SearchRequest):
     """
     Generate 3 visual results based on user query and context (similar/different feedback)
     """
+    logger.info(f"Search request received - Query: '{request.query}'")
+    if request.context:
+        logger.info(f"Context: {len(request.context)} previous feedback items")
+        for idx, ctx in enumerate(request.context):
+            logger.info(f"  [{idx+1}] {ctx.get('feedback').upper()}: {ctx.get('title')}")
+
     try:
         # Build the prompt based on query and context
         system_prompt = """You are a creative recommendation engine. Generate 3 diverse, interesting recommendations
         based on the user's query. Each recommendation should be something visual and discoverable online
-        (products, websites, concepts, places, etc.).
+        (products, websites, concepts, places, activities, etc.).
 
         Return ONLY a valid JSON array with exactly 3 objects, each with:
-        - title: A catchy, short title
-        - description: 1-2 sentence description
-        - image_search_term: A specific 1-3 word search term for finding an image for this item (e.g., "sushi platter", "mountain lake", "modern architecture")
-        - url: A real website URL related to the item (actual domain like wikipedia.org, brand sites, etc.)
+        - title: A catchy, short title (2-5 words)
+        - description: 1-2 sentence description that captures why this is interesting
+        - image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
+          Examples of GOOD search terms:
+          * "japanese ramen bowl close up"
+          * "northern lights over mountains"
+          * "minimalist scandinavian interior"
+          * "golden retriever puppy playing"
 
-        IMPORTANT: Make each image_search_term specific and different to get diverse images.
+          Examples of BAD (too generic) search terms:
+          * "food" (too vague)
+          * "nature" (too broad)
+          * "design" (not specific enough)
 
-        Make the recommendations diverse and interesting. Focus on things that have good visual representation."""
+        - url: A real, working website URL directly related to the item (use actual domains: wikipedia.org, brand sites, specific product pages, etc.)
+
+        CRITICAL: Each image_search_term must be:
+        1. Highly specific and visual (not abstract concepts)
+        2. Different from the other two results
+        3. Likely to return a clear, recognizable photo on an image search
+
+        Make the recommendations diverse and interesting. Prioritize things with strong visual identity."""
 
         user_prompt = f"Query: {request.query}"
 
@@ -78,6 +169,7 @@ async def search(request: SearchRequest):
             user_prompt += "\nUse this feedback to refine the recommendations."
 
         # Call OpenAI API
+        logger.info(f"Calling OpenAI API (gpt-4o-mini) with query: '{request.query}'")
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -92,6 +184,7 @@ async def search(request: SearchRequest):
         import json
         content = response.choices[0].message.content
         data = json.loads(content)
+        logger.info(f"OpenAI API response received - tokens used: {response.usage.total_tokens}")
 
         # Handle both array and object with results key
         if isinstance(data, list):
@@ -107,37 +200,47 @@ async def search(request: SearchRequest):
             else:
                 results = []
 
-        # Convert image_search_term to actual image URLs
-        import random
-        import time
+        # Convert image_search_term to actual image URLs from Pexels
+        import asyncio
+
+        logger.info(f"Generated {len(results)} recommendations:")
+        for idx, result in enumerate(results[:3]):
+            logger.info(f"  [{idx+1}] {result.get('title')} - search term: '{result.get('image_search_term')}'")
 
         processed_results = []
-        # Generate unique random IDs for each image
-        random.seed(int(time.time() * 1000))
 
-        for idx, result in enumerate(results[:3]):
+        # Fetch images concurrently for all results
+        logger.info("Fetching images from Pexels API...")
+        image_tasks = []
+        for result in results[:3]:
             search_term = result.get("image_search_term", "abstract")
-            # Use Lorem Picsum for truly random images
-            # Generate a unique random image ID (picsum has IDs 0-1000+)
-            random_id = random.randint(1, 1000)
-            result["image_url"] = f"https://picsum.photos/seed/{search_term.replace(' ', '-')}-{random_id}/800/600"
+            image_tasks.append(fetch_image_from_pexels(search_term))
+
+        # Wait for all image fetches to complete
+        image_urls = await asyncio.gather(*image_tasks)
+
+        # Combine results with fetched images
+        for idx, result in enumerate(results[:3]):
+            result["image_url"] = image_urls[idx]
             # Remove image_search_term from final output
             result.pop("image_search_term", None)
             processed_results.append(result)
 
         # Validate we have exactly 3 results
         while len(processed_results) < 3:
-            random_id = random.randint(1, 1000)
+            fallback_image = await fetch_image_from_pexels("abstract")
             processed_results.append({
                 "title": "Explore More",
                 "description": "Try a different search",
-                "image_url": f"https://picsum.photos/seed/explore-{random_id}/800/600",
+                "image_url": fallback_image,
                 "url": "https://google.com"
             })
 
+        logger.info(f"Search completed successfully - Returning {len(processed_results)} results")
         return SearchResponse(results=processed_results[:3])
 
     except Exception as e:
+        logger.error(f"Error in search endpoint: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error generating results: {str(e)}")
 
 
