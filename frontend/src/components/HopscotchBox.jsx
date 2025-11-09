@@ -80,7 +80,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
               <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="What are you looking for?"
+                placeholder="Let's discover..."
                 autoFocus
                 rows={5}
                 disabled={isLoading}

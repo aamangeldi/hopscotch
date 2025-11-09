@@ -58,8 +58,10 @@ async def search(request: SearchRequest):
         Return ONLY a valid JSON array with exactly 3 objects, each with:
         - title: A catchy, short title
         - description: 1-2 sentence description
-        - image_url: A real, working image URL from the web (use placeholder services like unsplash.com if needed)
-        - url: A real website URL related to the item
+        - image_search_term: A specific 1-3 word search term for finding an image for this item (e.g., "sushi platter", "mountain lake", "modern architecture")
+        - url: A real website URL related to the item (actual domain like wikipedia.org, brand sites, etc.)
+
+        IMPORTANT: Make each image_search_term specific and different to get diverse images.
 
         Make the recommendations diverse and interesting. Focus on things that have good visual representation."""
 
@@ -105,18 +107,35 @@ async def search(request: SearchRequest):
             else:
                 results = []
 
-        # Validate we have exactly 3 results
-        if len(results) < 3:
-            # Pad with placeholder if needed
-            while len(results) < 3:
-                results.append({
-                    "title": "Explore More",
-                    "description": "Try a different search",
-                    "image_url": "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=400",
-                    "url": "https://google.com"
-                })
+        # Convert image_search_term to actual image URLs
+        import random
+        import time
 
-        return SearchResponse(results=results[:3])
+        processed_results = []
+        # Generate unique random IDs for each image
+        random.seed(int(time.time() * 1000))
+
+        for idx, result in enumerate(results[:3]):
+            search_term = result.get("image_search_term", "abstract")
+            # Use Lorem Picsum for truly random images
+            # Generate a unique random image ID (picsum has IDs 0-1000+)
+            random_id = random.randint(1, 1000)
+            result["image_url"] = f"https://picsum.photos/seed/{search_term.replace(' ', '-')}-{random_id}/800/600"
+            # Remove image_search_term from final output
+            result.pop("image_search_term", None)
+            processed_results.append(result)
+
+        # Validate we have exactly 3 results
+        while len(processed_results) < 3:
+            random_id = random.randint(1, 1000)
+            processed_results.append({
+                "title": "Explore More",
+                "description": "Try a different search",
+                "image_url": f"https://picsum.photos/seed/explore-{random_id}/800/600",
+                "url": "https://google.com"
+            })
+
+        return SearchResponse(results=processed_results[:3])
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating results: {str(e)}")
