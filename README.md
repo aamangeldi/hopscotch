@@ -84,42 +84,63 @@ A search interface where you hop through numbered boxes to discover visual conte
 5. Click any numbered box in the trail at the top to jump back
 6. Continue hopping through your discovery journey!
 
-## Deployment to Vercel
+## Deployment to Render
 
-### Deploy Frontend
+Both frontend and backend are deployed to Render's free tier. Currently live at:
+- https://hopscotch-frontend.onrender.com
+- https://hopscotch-backend-9euv.onrender.com
 
-1. Install Vercel CLI:
-   ```bash
-   npm i -g vercel
-   ```
+### Backend Deployment Instructions
 
-2. Deploy frontend:
-   ```bash
-   cd frontend
-   vercel
-   ```
+1. Go to [render.com](https://render.com) and sign up/login with GitHub
 
-3. Follow the prompts to deploy
+2. Click **"New +"** → **"Web Service"**
 
-### Deploy Backend
+3. Connect your GitHub repository
 
-You'll need to deploy the FastAPI backend separately. Options:
+4. Configure the service:
+   - **Name**: `hopscotch-backend`
+   - **Root Directory**: `backend`
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install .`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type**: `Free`
 
-1. **Railway** - Easy Python deployment
-2. **Render** - Free tier available
-3. **Heroku** - Classic option
-4. **Vercel Serverless Functions** - Convert FastAPI to serverless
+5. Add environment variables:
+   - `OPENAI_API_KEY` - Your OpenAI API key
+   - `PEXELS_API_KEY` - Your Pexels API key
 
-After deploying the backend, update the API URL in `frontend/src/App.jsx` from `http://localhost:8000` to your production backend URL.
+6. Click **"Create Web Service"**
+
+7. Copy your backend URL (e.g., `https://hopscotch-backend-xxxx.onrender.com`)
+
+### Frontend Deployment Instructions (Static Site)
+
+1. In Render dashboard, click **"New +"** → **"Static Site"**
+
+2. Connect the same GitHub repository
+
+3. Configure the site:
+   - **Name**: `hopscotch-frontend` (or your choice)
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm install; npm run build`
+   - **Publish Directory**: `dist`
+
+4. Add environment variable:
+   - `VITE_API_URL` - Your backend URL from step 7 above
+
+5. Click **"Create Static Site"**
+
+Your app will be live at the provided Render URL!
 
 ## Environment Variables for Production
 
-### Frontend
-- No environment variables needed (API URL is hardcoded)
+### Frontend (Static Site)
+- `VITE_API_URL` - Backend API URL (e.g., `https://hopscotch-backend-xxxx.onrender.com`)
 
-### Backend
+### Backend (Web Service)
 - `OPENAI_API_KEY` - Your OpenAI API key (required)
-- `PEXELS_API_KEY` - Your Pexels API key (required for relevant images)
+- `PEXELS_API_KEY` - Your Pexels API key (required for images)
 
 ## Tech Stack
 
