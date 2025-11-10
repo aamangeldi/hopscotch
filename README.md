@@ -1,10 +1,9 @@
 # Hopscotch - Visual Discovery Journey
 
-A playful, cartoon-style search interface where you hop through numbered boxes to discover visual content. Built with React and FastAPI, powered by OpenAI.
+A search interface where you hop through numbered boxes to discover visual content. Built with React and FastAPI, powered by OpenAI.
 
 ## Features
 
-- Cartoon retro design with bright colors and playful animations
 - Interactive hopscotch navigation - click numbered boxes to jump back
 - AI-powered visual search results (images, products, websites)
 - Refinement system - mark results as "similar" or "different" to guide next results
