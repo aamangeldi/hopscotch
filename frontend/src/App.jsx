@@ -3,10 +3,8 @@ import './App.css'
 import HopscotchTrail from './components/HopscotchTrail'
 import HopscotchBox from './components/HopscotchBox'
 
-// API URL - automatically switches between local and production
-const API_URL = import.meta.env.DEV
-  ? 'http://localhost:8000'
-  : 'https://hopscotch-backend-9euv.onrender.com'
+// API URL - uses environment variable or falls back to localhost
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 function App() {
   const [boxes, setBoxes] = useState([{ id: 1, type: 'input', query: null, results: null }])
