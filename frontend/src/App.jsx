@@ -3,6 +3,11 @@ import './App.css'
 import HopscotchTrail from './components/HopscotchTrail'
 import HopscotchBox from './components/HopscotchBox'
 
+// API URL - automatically switches between local and production
+const API_URL = import.meta.env.DEV
+  ? 'http://localhost:8000'
+  : 'https://hopscotch-backend-9euv.onrender.com'
+
 function App() {
   const [boxes, setBoxes] = useState([{ id: 1, type: 'input', query: null, results: null }])
   const [currentBox, setCurrentBox] = useState(1)
@@ -39,7 +44,7 @@ function App() {
   const handleSearch = async (query, boxId) => {
     setIsLoading(true)
     try {
-      const response = await fetch('http://localhost:8000/api/search', {
+      const response = await fetch(`${API_URL}/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +89,7 @@ function App() {
     setLoadingResults({ [boxId]: loadingIndices })
 
     try {
-      const response = await fetch('http://localhost:8000/api/refine', {
+      const response = await fetch(`${API_URL}/api/refine`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
