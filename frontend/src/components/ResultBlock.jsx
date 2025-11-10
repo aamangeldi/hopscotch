@@ -1,8 +1,18 @@
 import { SIMILAR_BUTTON_COLOR, DIFFERENT_BUTTON_COLOR } from '../constants'
 
-const ResultBlock = ({ result, onFeedback, isLatest }) => {
+const ResultBlock = ({ result, onFeedback, isLatest, isLoading }) => {
   return (
-    <div className="w-full h-full flex flex-col bg-black">
+    <div className="w-full h-full flex flex-col bg-black relative">
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-white text-sm font-bold">updating...</div>
+          </div>
+        </div>
+      )}
+
       {/* Image */}
       <div className="flex-1 overflow-hidden border-b-2 border-white/20">
         <img

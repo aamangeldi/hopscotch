@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import ResultBlock from './ResultBlock'
 import { BOX_COLORS } from '../constants'
 
-const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback }) => {
+const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSearch, onFeedback }) => {
   const [inputValue, setInputValue] = useState('')
   const [showInput, setShowInput] = useState(false)
   const [newSearchValue, setNewSearchValue] = useState('')
@@ -119,8 +119,9 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
               {box.results?.[0] && (
                 <ResultBlock
                   result={box.results[0]}
-                  onFeedback={(feedback) => onFeedback(box.results[0], feedback, box.id)}
+                  onFeedback={(feedback) => onFeedback(box.results[0], feedback, box.id, 0, box.results)}
                   isLatest={isLatest}
+                  isLoading={loadingResults.includes(0)}
                 />
               )}
             </div>
@@ -130,8 +131,9 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
               {box.results?.[1] && (
                 <ResultBlock
                   result={box.results[1]}
-                  onFeedback={(feedback) => onFeedback(box.results[1], feedback, box.id)}
+                  onFeedback={(feedback) => onFeedback(box.results[1], feedback, box.id, 1, box.results)}
                   isLatest={isLatest}
+                  isLoading={loadingResults.includes(1)}
                 />
               )}
             </div>
@@ -141,8 +143,9 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, onSearch, onFeedback
               {box.results?.[2] && (
                 <ResultBlock
                   result={box.results[2]}
-                  onFeedback={(feedback) => onFeedback(box.results[2], feedback, box.id)}
+                  onFeedback={(feedback) => onFeedback(box.results[2], feedback, box.id, 2, box.results)}
                   isLatest={isLatest}
+                  isLoading={loadingResults.includes(2)}
                 />
               )}
             </div>

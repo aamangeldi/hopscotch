@@ -8,6 +8,7 @@ function App() {
   const [currentBox, setCurrentBox] = useState(1)
   const [context, setContext] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingResults, setLoadingResults] = useState({}) // Track which specific results are loading: { boxId: [index0, index1, ...] }
   const boxRefs = useRef({})
   const scrollContainerRef = useRef(null)
 
@@ -68,18 +69,56 @@ function App() {
     }
   }
 
-  const handleFeedback = async (result, feedback, boxId) => {
-    // Add to context
-    const newContext = [...context, { title: result.title, feedback }]
-    setContext(newContext)
+  const handleFeedback = async (result, feedback, boxId, resultIndex, allResults) => {
+    // Determine which results will be loading on the current box
+    const loadingIndices = feedback === 'similar'
+      ? [0, 1, 2].filter(i => i !== resultIndex)  // Other 2 results
+      : [resultIndex]  // Just the clicked result
 
-    // Get current box's query
-    const currentBoxData = boxes.find(b => b.id === boxId)
-    const query = currentBoxData?.query || 'refined search'
+    setLoadingResults({ [boxId]: loadingIndices })
 
-    // Create new box with refined results
-    const newBoxId = boxId + 1
-    await handleSearch(query, newBoxId)
+    try {
+      const response = await fetch('http://localhost:8000/api/refine', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          feedback,
+          clickedResult: result,
+          allResults,
+          resultIndex,
+        }),
+      })
+
+      const data = await response.json()
+
+      // Create new results array for the new box
+      const newResults = [...allResults]
+      if (feedback === 'similar') {
+        // Replace the other 2 results with similar ones
+        const otherIndices = [0, 1, 2].filter(i => i !== resultIndex)
+        newResults[otherIndices[0]] = data.results[0]
+        newResults[otherIndices[1]] = data.results[1]
+      } else if (feedback === 'different') {
+        // Replace only the clicked result with a different one
+        newResults[resultIndex] = data.results[0]
+      }
+
+      // Get current box's query
+      const currentBoxData = boxes.find(b => b.id === boxId)
+      const query = currentBoxData?.query || 'refined search'
+
+      // Create new box with refined results
+      const newBoxId = boxId + 1
+      setBoxes(prev => [...prev, { id: newBoxId, type: 'results', query, results: newResults }])
+      setCurrentBox(newBoxId)
+    } catch (error) {
+      console.error('Error refining results:', error)
+      alert('Error refining results. Make sure the backend is running!')
+    } finally {
+      setLoadingResults({})
+    }
   }
 
   const jumpToBox = (boxId) => {
@@ -105,6 +144,7 @@ function App() {
                 isActive={box.id === currentBox}
                 isLatest={isLatestBox}
                 isLoading={isLoading && isLatestBox}
+                loadingResults={loadingResults[box.id] || []}
                 onSearch={handleSearch}
                 onFeedback={handleFeedback}
               />
