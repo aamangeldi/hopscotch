@@ -121,6 +121,17 @@ class SearchResponse(BaseModel):
     results: List[ResultItem]
 
 
+class RefineRequest(BaseModel):
+    feedback: str  # "similar" or "different"
+    clickedResult: ResultItem
+    allResults: List[ResultItem]
+    resultIndex: int
+
+
+class RefineResponse(BaseModel):
+    results: List[ResultItem]
+
+
 @app.get("/")
 async def root():
     return {"message": "Hopscotch API"}
@@ -241,6 +252,111 @@ async def search(request: SearchRequest):
     except Exception as e:
         logger.error(f"Error in search endpoint: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error generating results: {str(e)}")
+
+
+@app.post("/api/refine", response_model=RefineResponse)
+async def refine(request: RefineRequest):
+    """
+    Refine results based on user feedback (similar or different).
+    - For "similar": Generate 2 new results similar to the clicked result
+    - For "different": Generate 1 new result different from the clicked result, more aligned with the other 2
+    """
+    logger.info(f"Refine request received - Feedback: '{request.feedback}' on '{request.clickedResult.title}'")
+
+    try:
+        # Determine how many results to generate
+        num_results = 2 if request.feedback == "similar" else 1
+
+        if request.feedback == "similar":
+            # Generate 2 results similar to the clicked result
+            system_prompt = """You are a creative recommendation engine. Generate recommendations that are
+            SIMILAR to the reference item provided. The recommendations should share common themes, style,
+            category, or characteristics with the reference.
+
+            For each recommendation provide:
+            - title: A catchy, short title (2-5 words)
+            - description: A very concise description (MAX 100 characters, be brief!)
+            - image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
+            - url: A real, working website URL directly related to the item
+
+            Make the recommendations diverse but clearly related to the reference item."""
+
+            user_prompt = f"""Reference item (generate {num_results} items SIMILAR to this):
+Title: {request.clickedResult.title}
+Description: {request.clickedResult.description}
+
+Generate {num_results} recommendations that are similar to this reference item."""
+
+        else:  # "different"
+            # Generate 1 result different from the clicked result, aligned with the other 2
+            other_results = [r for i, r in enumerate(request.allResults) if i != request.resultIndex]
+
+            system_prompt = """You are a creative recommendation engine. Generate a recommendation that is
+            DIFFERENT from the reference item but MORE ALIGNED with the direction suggested by the other items.
+
+            For the recommendation provide:
+            - title: A catchy, short title (2-5 words)
+            - description: A very concise description (MAX 100 characters, be brief!)
+            - image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
+            - url: A real, working website URL directly related to the item
+
+            The recommendation should contrast with the reference item but fit better with the other items."""
+
+            user_prompt = f"""Reference item (generate something DIFFERENT from this):
+Title: {request.clickedResult.title}
+Description: {request.clickedResult.description}
+
+Other items in the set (generate something more aligned with these):
+1. Title: {other_results[0].title}
+   Description: {other_results[0].description}
+2. Title: {other_results[1].title}
+   Description: {other_results[1].description}
+
+Generate 1 recommendation that is different from the reference but more aligned with the other items."""
+
+        # Call OpenAI API
+        logger.info(f"Calling OpenAI API for {num_results} {'similar' if request.feedback == 'similar' else 'different'} result(s)")
+        completion = client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.8,
+            response_format=RecommendationsOutput
+        )
+
+        # Get structured output
+        output = completion.choices[0].message.parsed
+        logger.info(f"OpenAI API response received - tokens used: {completion.usage.total_tokens}")
+
+        # Extract results
+        results = [rec.model_dump() for rec in output.recommendations[:num_results]]
+
+        # Fetch images concurrently
+        import asyncio
+        logger.info(f"Fetching {len(results)} image(s) from Pexels API...")
+        image_tasks = []
+        for result in results:
+            search_term = result.get("image_search_term", "abstract")
+            image_tasks.append(fetch_image_from_pexels(search_term))
+
+        # Wait for all image fetches to complete
+        image_urls = await asyncio.gather(*image_tasks)
+
+        # Combine results with fetched images
+        processed_results = []
+        for idx, result in enumerate(results):
+            result["image_url"] = image_urls[idx]
+            result.pop("image_search_term", None)
+            processed_results.append(result)
+
+        logger.info(f"Refine completed successfully - Returning {len(processed_results)} result(s)")
+        return RefineResponse(results=processed_results)
+
+    except Exception as e:
+        logger.error(f"Error in refine endpoint: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error refining results: {str(e)}")
 
 
 if __name__ == "__main__":
