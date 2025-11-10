@@ -8,6 +8,7 @@ from openai import OpenAI
 import httpx
 import random
 import logging
+import asyncio
 
 load_dotenv()
 
@@ -18,6 +19,32 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
+
+# Common prompt components
+PROMPT_BASE_INSTRUCTION = "You are a creative recommendation engine."
+
+PROMPT_OUTPUT_FORMAT = """For each recommendation provide:
+- title: A catchy, short title (2-5 words)
+- description: A very concise description (MAX 100 characters, be brief!)
+- image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
+- url: A real, working website URL directly related to the item"""
+
+PROMPT_IMAGE_GUIDANCE = """
+Examples of GOOD search terms:
+* "japanese ramen bowl close up"
+* "northern lights over mountains"
+* "minimalist scandinavian interior"
+* "golden retriever puppy playing"
+
+Examples of BAD (too generic) search terms:
+* "food" (too vague)
+* "nature" (too broad)
+* "design" (not specific enough)
+
+CRITICAL: Each image_search_term must be:
+1. Highly specific and visual (not abstract concepts)
+2. Different from the other results
+3. Likely to return a clear, recognizable photo on an image search"""
 
 app = FastAPI()
 
@@ -94,9 +121,32 @@ async def fetch_image_from_pexels(search_term: str) -> str:
             )
 
 
+async def process_results_with_images(results: List[dict]) -> List[dict]:
+    """
+    Fetch images for results and process them into the final format.
+    Removes image_search_term and adds image_url.
+    """
+    logger.info(f"Fetching {len(results)} image(s) from Pexels API...")
+
+    # Fetch images concurrently
+    image_tasks = [
+        fetch_image_from_pexels(result.get("image_search_term", "abstract"))
+        for result in results
+    ]
+    image_urls = await asyncio.gather(*image_tasks)
+
+    # Combine results with fetched images
+    processed_results = []
+    for idx, result in enumerate(results):
+        result["image_url"] = image_urls[idx]
+        result.pop("image_search_term", None)
+        processed_results.append(result)
+
+    return processed_results
+
+
 class SearchRequest(BaseModel):
     query: str
-    context: Optional[List[dict]] = None  # Previous selections with similar/different
 
 
 class RecommendationItem(BaseModel):
@@ -140,55 +190,22 @@ async def root():
 @app.post("/api/search", response_model=SearchResponse)
 async def search(request: SearchRequest):
     """
-    Generate 3 visual results based on user query and context (similar/different feedback)
+    Generate 3 diverse visual results based on user query.
     """
     logger.info(f"Search request received - Query: '{request.query}'")
-    if request.context:
-        logger.info(f"Context: {len(request.context)} previous feedback items")
-        for idx, ctx in enumerate(request.context):
-            logger.info(f"  [{idx+1}] {ctx.get('feedback').upper()}: {ctx.get('title')}")
 
     try:
-        # Build the prompt based on query and context
-        system_prompt = """You are a creative recommendation engine. Generate 3 diverse, interesting recommendations
-        based on the user's query. Each recommendation should be something visual and discoverable online
-        (products, websites, concepts, places, activities, etc.).
+        # Build the prompt using common components
+        system_prompt = f"""{PROMPT_BASE_INSTRUCTION} Generate 3 diverse, interesting recommendations
+based on the user's query. Each recommendation should be something visual and discoverable online
+(products, websites, concepts, places, activities, etc.).
 
-        For each recommendation provide:
-        - title: A catchy, short title (2-5 words)
-        - description: A very concise description (MAX 100 characters, be brief!)
-        - image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
-          Examples of GOOD search terms:
-          * "japanese ramen bowl close up"
-          * "northern lights over mountains"
-          * "minimalist scandinavian interior"
-          * "golden retriever puppy playing"
+{PROMPT_OUTPUT_FORMAT}
+{PROMPT_IMAGE_GUIDANCE}
 
-          Examples of BAD (too generic) search terms:
-          * "food" (too vague)
-          * "nature" (too broad)
-          * "design" (not specific enough)
-
-        - url: A real, working website URL directly related to the item (use actual domains: wikipedia.org, brand sites, specific product pages, etc.)
-
-        CRITICAL: Each image_search_term must be:
-        1. Highly specific and visual (not abstract concepts)
-        2. Different from the other two results
-        3. Likely to return a clear, recognizable photo on an image search
-
-        Make the recommendations diverse and interesting. Prioritize things with strong visual identity."""
+Make the recommendations diverse and interesting. Prioritize things with strong visual identity."""
 
         user_prompt = f"Query: {request.query}"
-
-        # Add context from previous selections
-        if request.context:
-            context_str = "\n\nUser feedback from previous selections:\n"
-            for item in request.context:
-                feedback = item.get("feedback")  # "similar" or "different"
-                title = item.get("title")
-                context_str += f"- {feedback.upper()} to: {title}\n"
-            user_prompt += context_str
-            user_prompt += "\nUse this feedback to refine the recommendations."
 
         # Call OpenAI API with structured outputs
         logger.info(f"Calling OpenAI API (gpt-4o-mini) with query: '{request.query}'")
@@ -210,31 +227,12 @@ async def search(request: SearchRequest):
         # Extract results from structured output
         results = [rec.model_dump() for rec in output.recommendations]
 
-        # Convert image_search_term to actual image URLs from Pexels
-        import asyncio
-
         logger.info(f"Generated {len(results)} recommendations:")
         for idx, result in enumerate(results[:3]):
             logger.info(f"  [{idx+1}] {result.get('title')} - search term: '{result.get('image_search_term')}'")
 
-        processed_results = []
-
-        # Fetch images concurrently for all results
-        logger.info("Fetching images from Pexels API...")
-        image_tasks = []
-        for result in results[:3]:
-            search_term = result.get("image_search_term", "abstract")
-            image_tasks.append(fetch_image_from_pexels(search_term))
-
-        # Wait for all image fetches to complete
-        image_urls = await asyncio.gather(*image_tasks)
-
-        # Combine results with fetched images
-        for idx, result in enumerate(results[:3]):
-            result["image_url"] = image_urls[idx]
-            # Remove image_search_term from final output
-            result.pop("image_search_term", None)
-            processed_results.append(result)
+        # Fetch images and process results
+        processed_results = await process_results_with_images(results[:3])
 
         # Validate we have exactly 3 results
         while len(processed_results) < 3:
@@ -267,19 +265,16 @@ async def refine(request: RefineRequest):
         # Determine how many results to generate
         num_results = 2 if request.feedback == "similar" else 1
 
+        # Build prompts using common components
         if request.feedback == "similar":
             # Generate 2 results similar to the clicked result
-            system_prompt = """You are a creative recommendation engine. Generate recommendations that are
-            SIMILAR to the reference item provided. The recommendations should share common themes, style,
-            category, or characteristics with the reference.
+            system_prompt = f"""{PROMPT_BASE_INSTRUCTION} Generate recommendations that are
+SIMILAR to the reference item provided. The recommendations should share common themes, style,
+category, or characteristics with the reference.
 
-            For each recommendation provide:
-            - title: A catchy, short title (2-5 words)
-            - description: A very concise description (MAX 100 characters, be brief!)
-            - image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
-            - url: A real, working website URL directly related to the item
+{PROMPT_OUTPUT_FORMAT}
 
-            Make the recommendations diverse but clearly related to the reference item."""
+Make the recommendations diverse but clearly related to the reference item."""
 
             user_prompt = f"""Reference item (generate {num_results} items SIMILAR to this):
 Title: {request.clickedResult.title}
@@ -291,16 +286,12 @@ Generate {num_results} recommendations that are similar to this reference item."
             # Generate 1 result different from the clicked result, aligned with the other 2
             other_results = [r for i, r in enumerate(request.allResults) if i != request.resultIndex]
 
-            system_prompt = """You are a creative recommendation engine. Generate a recommendation that is
-            DIFFERENT from the reference item but MORE ALIGNED with the direction suggested by the other items.
+            system_prompt = f"""{PROMPT_BASE_INSTRUCTION} Generate a recommendation that is
+DIFFERENT from the reference item but MORE ALIGNED with the direction suggested by the other items.
 
-            For the recommendation provide:
-            - title: A catchy, short title (2-5 words)
-            - description: A very concise description (MAX 100 characters, be brief!)
-            - image_search_term: A VERY SPECIFIC 2-4 word visual search term that precisely represents this recommendation.
-            - url: A real, working website URL directly related to the item
+{PROMPT_OUTPUT_FORMAT}
 
-            The recommendation should contrast with the reference item but fit better with the other items."""
+The recommendation should contrast with the reference item but fit better with the other items."""
 
             user_prompt = f"""Reference item (generate something DIFFERENT from this):
 Title: {request.clickedResult.title}
@@ -330,26 +321,9 @@ Generate 1 recommendation that is different from the reference but more aligned 
         output = completion.choices[0].message.parsed
         logger.info(f"OpenAI API response received - tokens used: {completion.usage.total_tokens}")
 
-        # Extract results
+        # Extract results and fetch images
         results = [rec.model_dump() for rec in output.recommendations[:num_results]]
-
-        # Fetch images concurrently
-        import asyncio
-        logger.info(f"Fetching {len(results)} image(s) from Pexels API...")
-        image_tasks = []
-        for result in results:
-            search_term = result.get("image_search_term", "abstract")
-            image_tasks.append(fetch_image_from_pexels(search_term))
-
-        # Wait for all image fetches to complete
-        image_urls = await asyncio.gather(*image_tasks)
-
-        # Combine results with fetched images
-        processed_results = []
-        for idx, result in enumerate(results):
-            result["image_url"] = image_urls[idx]
-            result.pop("image_search_term", None)
-            processed_results.append(result)
+        processed_results = await process_results_with_images(results)
 
         logger.info(f"Refine completed successfully - Returning {len(processed_results)} result(s)")
         return RefineResponse(results=processed_results)

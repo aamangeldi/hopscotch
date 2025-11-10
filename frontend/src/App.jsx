@@ -6,7 +6,6 @@ import HopscotchBox from './components/HopscotchBox'
 function App() {
   const [boxes, setBoxes] = useState([{ id: 1, type: 'input', query: null, results: null }])
   const [currentBox, setCurrentBox] = useState(1)
-  const [context, setContext] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [loadingResults, setLoadingResults] = useState({}) // Track which specific results are loading: { boxId: [index0, index1, ...] }
   const boxRefs = useRef({})
@@ -39,7 +38,6 @@ function App() {
         },
         body: JSON.stringify({
           query,
-          context: context,
         }),
       })
 
