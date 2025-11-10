@@ -122,6 +122,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
                   onFeedback={(feedback) => onFeedback(box.results[0], feedback, box.id, 0, box.results)}
                   isLatest={isLatest}
                   isLoading={loadingResults.includes(0)}
+                  isAnyLoading={loadingResults.length > 0}
                 />
               )}
             </div>
@@ -134,6 +135,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
                   onFeedback={(feedback) => onFeedback(box.results[1], feedback, box.id, 1, box.results)}
                   isLatest={isLatest}
                   isLoading={loadingResults.includes(1)}
+                  isAnyLoading={loadingResults.length > 0}
                 />
               )}
             </div>
@@ -146,6 +148,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
                   onFeedback={(feedback) => onFeedback(box.results[2], feedback, box.id, 2, box.results)}
                   isLatest={isLatest}
                   isLoading={loadingResults.includes(2)}
+                  isAnyLoading={loadingResults.length > 0}
                 />
               )}
             </div>

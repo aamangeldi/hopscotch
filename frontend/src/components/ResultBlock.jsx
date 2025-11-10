@@ -1,6 +1,6 @@
 import { SIMILAR_BUTTON_COLOR, DIFFERENT_BUTTON_COLOR } from '../constants'
 
-const ResultBlock = ({ result, onFeedback, isLatest, isLoading }) => {
+const ResultBlock = ({ result, onFeedback, isLatest, isLoading, isAnyLoading }) => {
   return (
     <div className="w-full h-full flex flex-col bg-black relative">
       {/* Loading overlay */}
@@ -36,7 +36,7 @@ const ResultBlock = ({ result, onFeedback, isLatest, isLoading }) => {
         <div className="flex gap-2">
           <button
             onClick={() => onFeedback('similar')}
-            disabled={!isLatest}
+            disabled={!isLatest || isAnyLoading}
             className={`flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border ${SIMILAR_BUTTON_COLOR} disabled:cursor-not-allowed disabled:hover:bg-black`}
             title="Similar"
           >
@@ -44,18 +44,17 @@ const ResultBlock = ({ result, onFeedback, isLatest, isLoading }) => {
           </button>
           <button
             onClick={() => onFeedback('different')}
-            disabled={!isLatest}
+            disabled={!isLatest || isAnyLoading}
             className={`flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border ${DIFFERENT_BUTTON_COLOR} disabled:cursor-not-allowed disabled:hover:bg-black`}
             title="Different"
           >
             different
           </button>
           <a
-            href={isLatest ? result.url : undefined}
-            target={isLatest ? "_blank" : undefined}
-            rel={isLatest ? "noopener noreferrer" : undefined}
-            onClick={(e) => !isLatest && e.preventDefault()}
-            className={`flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-white/30 text-center ${!isLatest ? 'cursor-not-allowed hover:bg-black' : ''}`}
+            href={result.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 px-3 py-2 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border border-white/30 text-center"
             title="Visit"
           >
             go to website
