@@ -48,9 +48,22 @@ CRITICAL: Each image_search_term must be:
 app = FastAPI()
 
 # CORS middleware to allow React frontend to call the API
+# Allow localhost for development and any Render URL for production
+allowed_origins = [
+    "http://localhost:5173",  # Vite default port
+    "http://localhost:5174",  # Alternative Vite port
+]
+
+# Allow any origin in production (Render URLs will be dynamic)
+# You can also set a specific origin via FRONTEND_URL env variable
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite default port
+    allow_origins=allowed_origins if not frontend_url else allowed_origins,
+    allow_origin_regex=r"https://.*\.onrender\.com",  # Allow all Render URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
