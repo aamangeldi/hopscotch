@@ -13,21 +13,21 @@ const SteeringButtons = ({ onInspire, disabled, colorClass }) => {
         disabled={disabled}
         className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        box 1
+        steer 1
       </button>
       <button
         onClick={() => onInspire(1)}
         disabled={disabled}
         className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        box 2
+        steer 2
       </button>
       <button
         onClick={() => onInspire(2)}
         disabled={disabled}
         className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        box 3
+        steer 3
       </button>
     </div>
   )

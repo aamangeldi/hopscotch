@@ -181,7 +181,7 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
                 <textarea
                   value={newSearchValue}
                   onChange={(e) => setNewSearchValue(e.target.value)}
-                  placeholder="pull in a different dimension?"
+                  placeholder="steer in a different dimension?"
                   rows={3}
                   disabled={isLoading || !isLatest}
                   className="w-full px-3 py-2 text-sm bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none mb-2 disabled:cursor-not-allowed"
