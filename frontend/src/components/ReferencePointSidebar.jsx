@@ -1,4 +1,4 @@
-import { BOX_COLORS } from '../constants'
+import { getBoxColorClass } from '../utils'
 
 const ReferencePointSidebar = ({ referencePoints, onClickReferencePoint }) => {
   return (
@@ -9,7 +9,7 @@ const ReferencePointSidebar = ({ referencePoints, onClickReferencePoint }) => {
           <div className="text-sm text-white/50">No reference points yet</div>
         ) : (
           referencePoints.map((point, index) => {
-            const colorClass = BOX_COLORS[(point.boxId - 1) % BOX_COLORS.length]
+            const colorClass = getBoxColorClass(point.boxId)
 
             return (
               <div

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BOX_COLORS } from '../constants'
+import { generateSummaryId, getBoxColorClass } from '../utils'
 import HopscotchBox from '../components/HopscotchBox'
 import PromptSidebar from '../components/PromptSidebar'
 import ReferencePointSidebar from '../components/ReferencePointSidebar'
@@ -19,7 +20,7 @@ const SummaryPage = ({ boxes, referencePoints }) => {
   // Generate unique summary ID on first load
   useEffect(() => {
     if (!currentSummaryId && resultBoxes.length > 0) {
-      const newId = Date.now().toString(36) + Math.random().toString(36).substr(2)
+      const newId = generateSummaryId()
       setCurrentSummaryId(newId)
       navigate(`/summary/${newId}`, { replace: true })
     }
@@ -61,7 +62,7 @@ const SummaryPage = ({ boxes, referencePoints }) => {
         acc.push({
           id: box.id,
           query: box.query,
-          colorClass: BOX_COLORS[(box.id - 1) % BOX_COLORS.length]
+          colorClass: getBoxColorClass(box.id)
         })
       }
       return acc
@@ -103,7 +104,7 @@ const SummaryPage = ({ boxes, referencePoints }) => {
       <div className="pt-24 pb-8">
         <div className="flex flex-wrap gap-4 mb-8 justify-center px-8">
           {resultBoxes.map((box) => {
-            const colorClass = BOX_COLORS[(box.id - 1) % BOX_COLORS.length]
+            const colorClass = getBoxColorClass(box.id)
             const isSelected = selectedBox?.id === box.id
 
             return (

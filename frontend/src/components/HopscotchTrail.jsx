@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BOX_COLORS } from '../constants'
+import { getBoxColorClass } from '../utils'
 
 const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo }, ref) => {
   const navigate = useNavigate()
@@ -11,7 +11,7 @@ const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo }, ref) => {
         {/* Box trail */}
         <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1">
           {boxes.map((box, index) => {
-            const colorClass = BOX_COLORS[index % BOX_COLORS.length]
+            const colorClass = getBoxColorClass(box.id)
             const isActive = box.id === currentBox
 
             return (
@@ -32,7 +32,7 @@ const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo }, ref) => {
                   {box.id}
                 </button>
                 {index < boxes.length - 1 && (
-                  <div className={`w-3 h-0.5 ${BOX_COLORS[index % BOX_COLORS.length]}`}></div>
+                  <div className={`w-3 h-0.5 ${colorClass}`}></div>
                 )}
               </div>
             )
