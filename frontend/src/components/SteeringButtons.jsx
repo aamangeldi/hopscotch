@@ -1,4 +1,4 @@
-const InspirationButtons = ({ onInspire, disabled, colorClass }) => {
+const SteeringButtons = ({ onInspire, disabled, colorClass }) => {
   return (
     <div className="grid grid-cols-4 gap-4">
       <button
@@ -33,4 +33,4 @@ const InspirationButtons = ({ onInspire, disabled, colorClass }) => {
   )
 }
 
-export default InspirationButtons
+export default SteeringButtons

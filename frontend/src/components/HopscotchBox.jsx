@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import ResultBlock from './ResultBlock'
-import InspirationButtons from './InspirationButtons'
+import SteeringButtons from './SteeringButtons'
 import { getBoxColorClass } from '../utils'
 
 const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSearch, onFeedback, onAddReferencePoint }) => {
@@ -187,8 +187,8 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
                   className="w-full px-3 py-2 text-sm bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none mb-2 disabled:cursor-not-allowed"
                 />
 
-                {/* Inspiration buttons */}
-                <InspirationButtons
+                {/* Steering buttons */}
+                <SteeringButtons
                   onInspire={handleInspiredSearch}
                   disabled={isLoading || !isLatest}
                   colorClass={colorClass}
