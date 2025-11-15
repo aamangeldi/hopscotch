@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { BOX_COLORS } from '../constants'
 import { generateSummaryId, getBoxColorClass } from '../utils'
 import HopscotchBox from '../components/HopscotchBox'
+import HopscotchTrail from '../components/HopscotchTrail'
 import PromptSidebar from '../components/PromptSidebar'
 import ReferencePointSidebar from '../components/ReferencePointSidebar'
 
@@ -10,6 +10,7 @@ const SummaryPage = ({ boxes, referencePoints }) => {
   const navigate = useNavigate()
   const { summaryId } = useParams()
   const [currentSummaryId, setCurrentSummaryId] = useState(summaryId || null)
+  const headerRef = useRef(null)
 
   // Only show boxes with results
   const resultBoxes = boxes.filter(box => box.type === 'results' && box.results)
@@ -35,8 +36,11 @@ const SummaryPage = ({ boxes, referencePoints }) => {
     })
   }
 
-  const handleBoxClick = (box) => {
-    setSelectedBox(box)
+  const handleBoxClick = (boxId) => {
+    const box = resultBoxes.find(b => b.id === boxId)
+    if (box) {
+      setSelectedBox(box)
+    }
   }
 
   const handleClickPrompt = (boxId) => {
@@ -68,65 +72,49 @@ const SummaryPage = ({ boxes, referencePoints }) => {
       return acc
     }, [])
 
-  return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header with profile and share button */}
-      <div className="fixed top-0 left-0 right-0 bg-black border-b border-white/20 p-3 z-50">
-        <div className="flex items-center justify-between">
-          {/* Profile section */}
-          <div className="flex items-center gap-3">
-            <img
-              src="/cheshire_cat.png"
-              alt="cheshirecat"
-              className="w-10 h-10 rounded-full object-cover bg-gradient-to-br from-purple-500 to-pink-500"
-              onError={(e) => {
-                e.target.style.display = 'none'
-                e.target.nextElementSibling.style.display = 'flex'
-              }}
-            />
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg" style={{ display: 'none' }}>
-              A
-            </div>
-            <span className="text-white font-medium">cheshire_cat</span>
-          </div>
-
-          {/* Share button */}
-          <button
-            onClick={handleShare}
-            className="px-6 py-2 bg-black text-white font-bold hover:bg-white/10 transition-colors border-2 border-white"
-          >
-            share
-          </button>
+  const profileAndShareContent = (
+    <div className="flex items-center gap-4">
+      {/* Profile section */}
+      <div className="flex items-center gap-3">
+        <img
+          src="/cheshire_cat.png"
+          alt="cheshirecat"
+          className="w-10 h-10 rounded-full object-cover bg-gradient-to-br from-purple-500 to-pink-500"
+          onError={(e) => {
+            e.target.style.display = 'none'
+            e.target.nextElementSibling.style.display = 'flex'
+          }}
+        />
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg" style={{ display: 'none' }}>
+          A
         </div>
+        <span className="text-white font-medium">cheshire_cat</span>
       </div>
 
-      {/* Hopscotch boxes at the top */}
-      <div className="pt-24 pb-8">
-        <div className="flex flex-wrap gap-4 mb-8 justify-center px-8">
-          {resultBoxes.map((box) => {
-            const colorClass = getBoxColorClass(box.id)
-            const isSelected = selectedBox?.id === box.id
+      {/* Share button */}
+      <button
+        onClick={handleShare}
+        className="px-6 py-2 bg-black text-white font-bold hover:bg-white/10 transition-colors border-2 border-white"
+      >
+        share
+      </button>
+    </div>
+  )
 
-            return (
-              <button
-                key={box.id}
-                onClick={() => handleBoxClick(box)}
-                className={`
-                  ${colorClass}
-                  ${isSelected ? 'scale-95 ring-4 ring-white/50' : 'hover:scale-95'}
-                  w-20 h-20
-                  flex items-center justify-center
-                  text-2xl font-bold text-white
-                  transform transition-all duration-200
-                  border-4 bg-black
-                  cursor-pointer
-                `}
-              >
-                {box.id}
-              </button>
-            )
-          })}
-        </div>
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header with box trail and profile/share */}
+      <HopscotchTrail
+        ref={headerRef}
+        boxes={resultBoxes}
+        currentBox={selectedBox?.id}
+        onJumpTo={handleBoxClick}
+        showSummarizeButton={false}
+        rightContent={profileAndShareContent}
+      />
+
+      {/* Main content */}
+      <div className="pt-24 pb-8">
 
         {/* Main content with sidebars */}
         {resultBoxes.length === 0 ? (
