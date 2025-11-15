@@ -143,6 +143,10 @@ function App() {
         path="/summary"
         element={<SummaryPage boxes={boxes} referencePoints={referencePoints} />}
       />
+      <Route
+        path="/summary/:summaryId"
+        element={<SummaryPage boxes={boxes} referencePoints={referencePoints} />}
+      />
     </Routes>
   )
 }

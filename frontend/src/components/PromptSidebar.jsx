@@ -1,8 +1,8 @@
 const PromptSidebar = ({ prompts, onClickPrompt }) => {
   return (
-    <div className="w-64 flex-shrink-0 border-2 border-white/20 p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 250px)' }}>
-      <h3 className="text-lg font-bold mb-4 text-white/70">steering</h3>
-      <div className="space-y-4">
+    <div className="w-64 flex-shrink-0 border-2 border-white/20 bg-black" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+      <h3 className="text-lg font-bold p-4 pb-2 text-white/70 sticky top-0 bg-black z-10">steering</h3>
+      <div className="space-y-4 p-4 pt-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
         {prompts.map((prompt) => (
           <div
             key={prompt.id}

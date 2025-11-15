@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { BOX_COLORS } from '../constants'
 import HopscotchBox from '../components/HopscotchBox'
 import PromptSidebar from '../components/PromptSidebar'
@@ -7,6 +7,8 @@ import ReferencePointSidebar from '../components/ReferencePointSidebar'
 
 const SummaryPage = ({ boxes, referencePoints }) => {
   const navigate = useNavigate()
+  const { summaryId } = useParams()
+  const [currentSummaryId, setCurrentSummaryId] = useState(summaryId || null)
 
   // Only show boxes with results
   const resultBoxes = boxes.filter(box => box.type === 'results' && box.results)
@@ -14,8 +16,22 @@ const SummaryPage = ({ boxes, referencePoints }) => {
   // Start by showing the final box
   const [selectedBox, setSelectedBox] = useState(resultBoxes[resultBoxes.length - 1] || null)
 
-  const handleBackClick = () => {
-    navigate('/')
+  // Generate unique summary ID on first load
+  useEffect(() => {
+    if (!currentSummaryId && resultBoxes.length > 0) {
+      const newId = Date.now().toString(36) + Math.random().toString(36).substr(2)
+      setCurrentSummaryId(newId)
+      navigate(`/summary/${newId}`, { replace: true })
+    }
+  }, [currentSummaryId, resultBoxes.length, navigate])
+
+  const handleShare = () => {
+    const url = window.location.href
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Summary link copied to clipboard!')
+    }).catch(err => {
+      console.error('Failed to copy:', err)
+    })
   }
 
   const handleBoxClick = (box) => {
@@ -53,14 +69,34 @@ const SummaryPage = ({ boxes, referencePoints }) => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header with back button */}
+      {/* Header with profile and share button */}
       <div className="fixed top-0 left-0 right-0 bg-black border-b border-white/20 p-3 z-50">
-        <button
-          onClick={handleBackClick}
-          className="px-6 py-3 bg-black text-white text-lg font-bold hover:bg-white/10 transition-colors border-2 border-white"
-        >
-          ← back to hopscotch
-        </button>
+        <div className="flex items-center justify-between">
+          {/* Profile section */}
+          <div className="flex items-center gap-3">
+            <img
+              src="/aliceinwonderland_profpic.png"
+              alt="aliceinwonderland"
+              className="w-10 h-10 rounded-full object-cover bg-gradient-to-br from-purple-500 to-pink-500"
+              onError={(e) => {
+                e.target.style.display = 'none'
+                e.target.nextElementSibling.style.display = 'flex'
+              }}
+            />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg" style={{ display: 'none' }}>
+              A
+            </div>
+            <span className="text-white font-medium">alice_in_wonderland</span>
+          </div>
+
+          {/* Share button */}
+          <button
+            onClick={handleShare}
+            className="px-6 py-2 bg-black text-white font-bold hover:bg-white/10 transition-colors border-2 border-white"
+          >
+            share
+          </button>
+        </div>
       </div>
 
       {/* Hopscotch boxes at the top */}
