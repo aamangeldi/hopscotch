@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ResultBlock from './ResultBlock'
+import InspirationButtons from './InspirationButtons'
 import { getBoxColorClass } from '../utils'
 
 const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSearch, onFeedback, onAddReferencePoint }) => {
@@ -187,36 +188,11 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
                 />
 
                 {/* Inspiration buttons */}
-                <div className="grid grid-cols-4 gap-1">
-                  <button
-                    onClick={() => handleInspiredSearch(0)}
-                    disabled={isLoading || !isLatest}
-                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    box1
-                  </button>
-                  <button
-                    onClick={() => handleInspiredSearch(1)}
-                    disabled={isLoading || !isLatest}
-                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    box2
-                  </button>
-                  <button
-                    onClick={() => handleInspiredSearch(2)}
-                    disabled={isLoading || !isLatest}
-                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    box3
-                  </button>
-                  <button
-                    onClick={() => handleInspiredSearch('generic')}
-                    disabled={isLoading || !isLatest}
-                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    generic
-                  </button>
-                </div>
+                <InspirationButtons
+                  onInspire={handleInspiredSearch}
+                  disabled={isLoading || !isLatest}
+                  colorClass={colorClass}
+                />
               </div>
             </div>
           </div>
