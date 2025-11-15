@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BOX_COLORS } from '../constants'
 import HopscotchBox from '../components/HopscotchBox'
 import PromptSidebar from '../components/PromptSidebar'
-import PositiveSignalSidebar from '../components/PositiveSignalSidebar'
+import ReferencePointSidebar from '../components/ReferencePointSidebar'
 
 const SummaryPage = ({ boxes, referencePoints }) => {
   const navigate = useNavigate()
@@ -120,7 +120,7 @@ const SummaryPage = ({ boxes, referencePoints }) => {
             </div>
 
             {/* Right sidebar - Reference points */}
-            <PositiveSignalSidebar similarClicks={referencePoints} onClickReferencePoint={handleClickReferencePoint} />
+            <ReferencePointSidebar referencePoints={referencePoints} onClickReferencePoint={handleClickReferencePoint} />
           </div>
         )}
       </div>

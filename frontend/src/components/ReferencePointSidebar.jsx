@@ -1,25 +1,25 @@
 import { BOX_COLORS } from '../constants'
 
-const PositiveSignalSidebar = ({ similarClicks, onClickReferencePoint }) => {
+const ReferencePointSidebar = ({ referencePoints, onClickReferencePoint }) => {
   return (
     <div className="w-64 flex-shrink-0 border-2 border-white/20 p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 250px)' }}>
       <h3 className="text-lg font-bold mb-4 text-white/70">reference points</h3>
       <div className="space-y-4">
-        {similarClicks.length === 0 ? (
+        {referencePoints.length === 0 ? (
           <div className="text-sm text-white/50">No reference points yet</div>
         ) : (
-          similarClicks.map((click, index) => {
-            const colorClass = BOX_COLORS[(click.boxId - 1) % BOX_COLORS.length]
+          referencePoints.map((point, index) => {
+            const colorClass = BOX_COLORS[(point.boxId - 1) % BOX_COLORS.length]
 
             return (
               <div
                 key={index}
                 className={`border-2 ${colorClass} bg-black cursor-pointer hover:opacity-80 transition-opacity`}
-                onClick={() => onClickReferencePoint(click.boxId)}
+                onClick={() => onClickReferencePoint(point.boxId)}
               >
                 <img
-                  src={click.image_url}
-                  alt={click.title}
+                  src={point.image_url}
+                  alt={point.title}
                   className="w-full h-32 object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none'
@@ -27,7 +27,7 @@ const PositiveSignalSidebar = ({ similarClicks, onClickReferencePoint }) => {
                 />
                 <div className="p-2">
                   <a
-                    href={click.url}
+                    href={point.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
@@ -45,4 +45,4 @@ const PositiveSignalSidebar = ({ similarClicks, onClickReferencePoint }) => {
   )
 }
 
-export default PositiveSignalSidebar
+export default ReferencePointSidebar
