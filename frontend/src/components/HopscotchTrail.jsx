@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BoxTrailButton from './BoxTrailButton'
 
-const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo, showSummarizeButton = true, rightContent = null }, ref) => {
+const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo }, ref) => {
   const navigate = useNavigate()
 
   return (
@@ -21,15 +21,13 @@ const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo, showSummarizeB
           ))}
         </div>
 
-        {/* Right content (summarize button or custom content) */}
-        {rightContent ? rightContent : showSummarizeButton && (
-          <button
-            onClick={() => navigate('/summary')}
-            className="flex-shrink-0 px-4 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 border-white"
-          >
-            summarize
-          </button>
-        )}
+        {/* Summarize button */}
+        <button
+          onClick={() => navigate('/summary')}
+          className="flex-shrink-0 px-4 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 border-white"
+        >
+          summarize
+        </button>
       </div>
     </div>
   )
