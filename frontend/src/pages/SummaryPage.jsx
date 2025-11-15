@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BOX_COLORS } from '../constants'
 import HopscotchBox from '../components/HopscotchBox'
+import PromptSidebar from '../components/PromptSidebar'
+import PositiveSignalSidebar from '../components/PositiveSignalSidebar'
 
 const SummaryPage = ({ boxes }) => {
   const navigate = useNavigate()
@@ -19,6 +21,24 @@ const SummaryPage = ({ boxes }) => {
   const handleBoxClick = (box) => {
     setSelectedBox(box)
   }
+
+  // Get prompts that changed from the previous box
+  const prompts = boxes
+    .filter(box => box.query)
+    .reduce((acc, box, index, arr) => {
+      // Include first prompt or when query changes from previous
+      if (index === 0 || box.query !== arr[index - 1].query) {
+        acc.push({
+          id: box.id,
+          query: box.query,
+          colorClass: BOX_COLORS[(box.id - 1) % BOX_COLORS.length]
+        })
+      }
+      return acc
+    }, [])
+
+  // Get all results that were clicked as "similar" - TODO: track this in state
+  const similarClicks = []
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -60,27 +80,35 @@ const SummaryPage = ({ boxes }) => {
           })}
         </div>
 
-        {/* Selected box display */}
-        {selectedBox && (
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-5xl">
-              <HopscotchBox
-                box={selectedBox}
-                isActive={false}
-                isLatest={false}
-                isLoading={false}
-                loadingResults={[]}
-                onSearch={() => {}}
-                onFeedback={() => {}}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {resultBoxes.length === 0 && (
+        {/* Main content with sidebars */}
+        {resultBoxes.length === 0 ? (
           <div className="text-center py-12 text-white/50">
             <p className="text-xl">No hopscotch results yet. Start exploring first!</p>
+          </div>
+        ) : (
+          <div className="flex gap-4 px-4">
+            {/* Left sidebar - Prompts */}
+            <PromptSidebar prompts={prompts} />
+
+            {/* Center - Selected box display */}
+            <div className="flex-1 flex flex-col items-center">
+              {selectedBox && (
+                <div className="w-full max-w-3xl">
+                  <HopscotchBox
+                    box={selectedBox}
+                    isActive={false}
+                    isLatest={false}
+                    isLoading={false}
+                    loadingResults={[]}
+                    onSearch={() => {}}
+                    onFeedback={() => {}}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Right sidebar - Similar clicks */}
+            <PositiveSignalSidebar similarClicks={similarClicks} />
           </div>
         )}
       </div>
