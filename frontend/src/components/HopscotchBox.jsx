@@ -38,6 +38,22 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
     }
   }
 
+  const handleInspiredSearch = (inspirationSource) => {
+    if (newSearchValue.trim() && !isLoading) {
+      const targetBoxId = box.id + 1
+
+      // TODO: Backend implementation - pass inspiration source to search
+      if (inspirationSource === 'generic') {
+        console.log('Generic inspiration')
+      } else {
+        console.log(`Inspire from box ${inspirationSource + 1}:`, box.results?.[inspirationSource])
+      }
+
+      onSearch(newSearchValue, targetBoxId)
+      setNewSearchValue('')
+    }
+  }
+
   const colorClass = BOX_COLORS[(box.id - 1) % BOX_COLORS.length]
 
   if (box.type === 'input') {
@@ -155,23 +171,48 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
 
             {/* Bottom-right: New prompt input */}
             <div className="flex items-center justify-center p-4">
-              <form onSubmit={handleNewSearchSubmit} className={`w-full h-full flex flex-col justify-center ${!isLatest ? 'opacity-30' : ''}`}>
+              <div className={`w-full h-full flex flex-col justify-center ${!isLatest ? 'opacity-30' : ''}`}>
                 <textarea
                   value={newSearchValue}
                   onChange={(e) => setNewSearchValue(e.target.value)}
-                  placeholder="or something else?"
-                  rows={2}
+                  placeholder="pull in a different dimension?"
+                  rows={3}
                   disabled={isLoading || !isLatest}
                   className="w-full px-3 py-2 text-sm bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none mb-2 disabled:cursor-not-allowed"
                 />
-                <button
-                  type="submit"
-                  disabled={isLoading || !isLatest}
-                  className={`w-full px-3 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  hop
-                </button>
-              </form>
+
+                {/* Inspiration buttons */}
+                <div className="grid grid-cols-4 gap-1">
+                  <button
+                    onClick={() => handleInspiredSearch(0)}
+                    disabled={isLoading || !isLatest}
+                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    box1
+                  </button>
+                  <button
+                    onClick={() => handleInspiredSearch(1)}
+                    disabled={isLoading || !isLatest}
+                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    box2
+                  </button>
+                  <button
+                    onClick={() => handleInspiredSearch(2)}
+                    disabled={isLoading || !isLatest}
+                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    box3
+                  </button>
+                  <button
+                    onClick={() => handleInspiredSearch('generic')}
+                    disabled={isLoading || !isLatest}
+                    className={`px-2 py-1 bg-black text-white text-xs font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    generic
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
