@@ -76,8 +76,8 @@ const SummaryPage = ({ boxes, referencePoints }) => {
           {/* Profile section */}
           <div className="flex items-center gap-3">
             <img
-              src="/aliceinwonderland_profpic.png"
-              alt="aliceinwonderland"
+              src="/cheshire_cat.png"
+              alt="cheshirecat"
               className="w-10 h-10 rounded-full object-cover bg-gradient-to-br from-purple-500 to-pink-500"
               onError={(e) => {
                 e.target.style.display = 'none'
@@ -87,7 +87,7 @@ const SummaryPage = ({ boxes, referencePoints }) => {
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg" style={{ display: 'none' }}>
               A
             </div>
-            <span className="text-white font-medium">alice_in_wonderland</span>
+            <span className="text-white font-medium">cheshire_cat</span>
           </div>
 
           {/* Share button */}
