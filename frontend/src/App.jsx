@@ -13,6 +13,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [loadingResults, setLoadingResults] = useState({}) // Track which specific results are loading: { boxId: [index0, index1, ...] }
   const [headerHeight, setHeaderHeight] = useState(0)
+  const [referencePoints, setReferencePoints] = useState([]) // Track results marked as reference points
 
   const handleSearch = async (query, boxId) => {
     setIsLoading(true)
@@ -53,7 +54,16 @@ function App() {
     }
   }
 
+  const addReferencePoint = (result, boxId, source = 'similar', steeringText = null) => {
+    setReferencePoints(prev => [...prev, { ...result, boxId, source, steeringText }])
+  }
+
   const handleFeedback = async (result, feedback, boxId, resultIndex, allResults) => {
+    // Track reference point when "similar" is clicked
+    if (feedback === 'similar') {
+      addReferencePoint(result, boxId)
+    }
+
     // Determine which results will be loading on the current box
     const loadingIndices = feedback === 'similar'
       ? [0, 1, 2].filter(i => i !== resultIndex)  // Other 2 results
@@ -122,6 +132,7 @@ function App() {
             loadingResults={loadingResults}
             onSearch={handleSearch}
             onFeedback={handleFeedback}
+            onAddReferencePoint={addReferencePoint}
             onJumpToBox={jumpToBox}
             headerHeight={headerHeight}
             setHeaderHeight={setHeaderHeight}
@@ -130,7 +141,7 @@ function App() {
       />
       <Route
         path="/summary"
-        element={<SummaryPage boxes={boxes} />}
+        element={<SummaryPage boxes={boxes} referencePoints={referencePoints} />}
       />
     </Routes>
   )

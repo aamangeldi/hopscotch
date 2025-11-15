@@ -9,6 +9,7 @@ const HomePage = ({
   loadingResults,
   onSearch,
   onFeedback,
+  onAddReferencePoint,
   onJumpToBox,
   headerHeight,
   setHeaderHeight
@@ -65,6 +66,7 @@ const HomePage = ({
                 loadingResults={loadingResults[box.id] || []}
                 onSearch={onSearch}
                 onFeedback={onFeedback}
+                onAddReferencePoint={onAddReferencePoint}
               />
             </div>
           )

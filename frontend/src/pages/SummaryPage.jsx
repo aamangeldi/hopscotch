@@ -5,7 +5,7 @@ import HopscotchBox from '../components/HopscotchBox'
 import PromptSidebar from '../components/PromptSidebar'
 import PositiveSignalSidebar from '../components/PositiveSignalSidebar'
 
-const SummaryPage = ({ boxes }) => {
+const SummaryPage = ({ boxes, referencePoints }) => {
   const navigate = useNavigate()
 
   // Only show boxes with results
@@ -22,6 +22,20 @@ const SummaryPage = ({ boxes }) => {
     setSelectedBox(box)
   }
 
+  const handleClickPrompt = (boxId) => {
+    const box = resultBoxes.find(b => b.id === boxId)
+    if (box) {
+      setSelectedBox(box)
+    }
+  }
+
+  const handleClickReferencePoint = (boxId) => {
+    const box = resultBoxes.find(b => b.id === boxId)
+    if (box) {
+      setSelectedBox(box)
+    }
+  }
+
   // Get prompts that changed from the previous box
   const prompts = boxes
     .filter(box => box.query)
@@ -36,9 +50,6 @@ const SummaryPage = ({ boxes }) => {
       }
       return acc
     }, [])
-
-  // Get all results that were clicked as "similar" - TODO: track this in state
-  const similarClicks = []
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -88,7 +99,7 @@ const SummaryPage = ({ boxes }) => {
         ) : (
           <div className="flex gap-4 px-4">
             {/* Left sidebar - Prompts */}
-            <PromptSidebar prompts={prompts} />
+            <PromptSidebar prompts={prompts} onClickPrompt={handleClickPrompt} />
 
             {/* Center - Selected box display */}
             <div className="flex-1 flex flex-col items-center">
@@ -102,13 +113,14 @@ const SummaryPage = ({ boxes }) => {
                     loadingResults={[]}
                     onSearch={() => {}}
                     onFeedback={() => {}}
+                    onAddReferencePoint={(result, boxId, source, steeringText) => {}}
                   />
                 </div>
               )}
             </div>
 
-            {/* Right sidebar - Similar clicks */}
-            <PositiveSignalSidebar similarClicks={similarClicks} />
+            {/* Right sidebar - Reference points */}
+            <PositiveSignalSidebar similarClicks={referencePoints} onClickReferencePoint={handleClickReferencePoint} />
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import ResultBlock from './ResultBlock'
 import { BOX_COLORS } from '../constants'
 
-const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSearch, onFeedback }) => {
+const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSearch, onFeedback, onAddReferencePoint }) => {
   const [inputValue, setInputValue] = useState('')
   const [showInput, setShowInput] = useState(false)
   const [newSearchValue, setNewSearchValue] = useState('')
@@ -41,6 +41,11 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
   const handleInspiredSearch = (inspirationSource) => {
     if (newSearchValue.trim() && !isLoading) {
       const targetBoxId = box.id + 1
+
+      // Add to reference points if a specific box is selected (not generic)
+      if (inspirationSource !== 'generic' && box.results?.[inspirationSource]) {
+        onAddReferencePoint(box.results[inspirationSource], box.id, 'steering', newSearchValue)
+      }
 
       // TODO: Backend implementation - pass inspiration source to search
       if (inspirationSource === 'generic') {
