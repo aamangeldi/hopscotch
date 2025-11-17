@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import ResultBlock from './ResultBlock'
-import { BOX_COLORS } from '../constants'
+import SteeringButtons from './SteeringButtons'
+import { getBoxColorClass } from '../utils'
 
-const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSearch, onFeedback }) => {
+const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSearch, onFeedback, onAddReferencePoint }) => {
   const [inputValue, setInputValue] = useState('')
   const [showInput, setShowInput] = useState(false)
   const [newSearchValue, setNewSearchValue] = useState('')
@@ -38,7 +39,28 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
     }
   }
 
-  const colorClass = BOX_COLORS[(box.id - 1) % BOX_COLORS.length]
+  const handleInspiredSearch = (inspirationSource) => {
+    if (newSearchValue.trim() && !isLoading) {
+      const targetBoxId = box.id + 1
+
+      // Add to reference points if a specific box is selected (not generic)
+      if (inspirationSource !== 'generic' && box.results?.[inspirationSource]) {
+        onAddReferencePoint(box.results[inspirationSource], box.id, 'steering', newSearchValue)
+      }
+
+      // TODO: Backend implementation - pass inspiration source to search
+      if (inspirationSource === 'generic') {
+        console.log('Generic inspiration')
+      } else {
+        console.log(`Inspire from box ${inspirationSource + 1}:`, box.results?.[inspirationSource])
+      }
+
+      onSearch(newSearchValue, targetBoxId)
+      setNewSearchValue('')
+    }
+  }
+
+  const colorClass = getBoxColorClass(box.id)
 
   if (box.type === 'input') {
     return (
@@ -155,23 +177,23 @@ const HopscotchBox = ({ box, isActive, isLatest, isLoading, loadingResults, onSe
 
             {/* Bottom-right: New prompt input */}
             <div className="flex items-center justify-center p-4">
-              <form onSubmit={handleNewSearchSubmit} className={`w-full h-full flex flex-col justify-center ${!isLatest ? 'opacity-30' : ''}`}>
+              <div className={`w-full h-full flex flex-col justify-center ${!isLatest ? 'opacity-30' : ''}`}>
                 <textarea
                   value={newSearchValue}
                   onChange={(e) => setNewSearchValue(e.target.value)}
-                  placeholder="or something else?"
-                  rows={2}
+                  placeholder="steer in a different dimension?"
+                  rows={3}
                   disabled={isLoading || !isLatest}
                   className="w-full px-3 py-2 text-sm bg-black text-white border-2 border-white/30 focus:outline-none focus:border-white font-mono placeholder:text-white/50 resize-none mb-2 disabled:cursor-not-allowed"
                 />
-                <button
-                  type="submit"
+
+                {/* Steering buttons */}
+                <SteeringButtons
+                  onInspire={handleInspiredSearch}
                   disabled={isLoading || !isLatest}
-                  className={`w-full px-3 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 ${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  hop
-                </button>
-              </form>
+                  colorClass={colorClass}
+                />
+              </div>
             </div>
           </div>
         </div>

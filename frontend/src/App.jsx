@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import './App.css'
-import HopscotchTrail from './components/HopscotchTrail'
-import HopscotchBox from './components/HopscotchBox'
+import HomePage from './pages/HomePage'
+import SummaryPage from './pages/SummaryPage'
 
 // API URL - uses environment variable or falls back to localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -12,32 +13,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [loadingResults, setLoadingResults] = useState({}) // Track which specific results are loading: { boxId: [index0, index1, ...] }
   const [headerHeight, setHeaderHeight] = useState(0)
-  const boxRefs = useRef({})
-  const scrollContainerRef = useRef(null)
-  const headerRef = useRef(null)
-
-  // Measure header height once on mount
-  useEffect(() => {
-    if (headerRef.current) {
-      setHeaderHeight(headerRef.current.offsetHeight)
-    }
-  }, [])
-
-  // Scroll to current box when it changes
-  useEffect(() => {
-    if (boxRefs.current[currentBox] && scrollContainerRef.current && headerHeight > 0) {
-      const boxElement = boxRefs.current[currentBox]
-      const container = scrollContainerRef.current
-      const boxTop = boxElement.offsetTop
-      const boxHeight = boxElement.offsetHeight
-      const containerHeight = container.clientHeight
-
-      // Center the box in the visible viewport area (excluding header space)
-      const scrollTo = boxTop - (containerHeight - boxHeight) / 2 - headerHeight / 2
-
-      container.scrollTo({ top: scrollTo, behavior: 'smooth' })
-    }
-  }, [currentBox, headerHeight])
+  const [referencePoints, setReferencePoints] = useState([]) // Track results marked as reference points
 
   const handleSearch = async (query, boxId) => {
     setIsLoading(true)
@@ -78,7 +54,16 @@ function App() {
     }
   }
 
+  const addReferencePoint = (result, boxId, source = 'similar', steeringText = null) => {
+    setReferencePoints(prev => [...prev, { ...result, boxId, source, steeringText }])
+  }
+
   const handleFeedback = async (result, feedback, boxId, resultIndex, allResults) => {
+    // Track reference point when "similar" is clicked
+    if (feedback === 'similar') {
+      addReferencePoint(result, boxId)
+    }
+
     // Determine which results will be loading on the current box
     const loadingIndices = feedback === 'similar'
       ? [0, 1, 2].filter(i => i !== resultIndex)  // Other 2 results
@@ -136,36 +121,33 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen overflow-hidden">
-      <HopscotchTrail ref={headerRef} boxes={boxes} currentBox={currentBox} onJumpTo={jumpToBox} />
-
-      <div
-        ref={scrollContainerRef}
-        className="pb-8 flex flex-col items-center gap-8 h-screen overflow-y-auto"
-        style={{ paddingTop: `calc(${headerHeight}px + 2rem)` }}
-      >
-        {boxes.map((box) => {
-          const isLatestBox = box.id === boxes[boxes.length - 1].id
-          return (
-            <div
-              key={box.id}
-              ref={(el) => boxRefs.current[box.id] = el}
-              className="w-full max-w-5xl"
-            >
-              <HopscotchBox
-                box={box}
-                isActive={box.id === currentBox}
-                isLatest={isLatestBox}
-                isLoading={isLoading && isLatestBox}
-                loadingResults={loadingResults[box.id] || []}
-                onSearch={handleSearch}
-                onFeedback={handleFeedback}
-              />
-            </div>
-          )
-        })}
-      </div>
-    </div>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <HomePage
+            boxes={boxes}
+            currentBox={currentBox}
+            isLoading={isLoading}
+            loadingResults={loadingResults}
+            onSearch={handleSearch}
+            onFeedback={handleFeedback}
+            onAddReferencePoint={addReferencePoint}
+            onJumpToBox={jumpToBox}
+            headerHeight={headerHeight}
+            setHeaderHeight={setHeaderHeight}
+          />
+        }
+      />
+      <Route
+        path="/summary"
+        element={<SummaryPage boxes={boxes} referencePoints={referencePoints} />}
+      />
+      <Route
+        path="/summary/:summaryId"
+        element={<SummaryPage boxes={boxes} referencePoints={referencePoints} />}
+      />
+    </Routes>
   )
 }
 
