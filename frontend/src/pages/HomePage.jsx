@@ -11,6 +11,7 @@ const HomePage = ({
   onFeedback,
   onAddReferencePoint,
   onJumpToBox,
+  onStartOver,
   headerHeight,
   setHeaderHeight
 }) => {
@@ -43,7 +44,7 @@ const HomePage = ({
 
   return (
     <div className="min-h-screen overflow-hidden">
-      <HopscotchTrail ref={headerRef} boxes={boxes} currentBox={currentBox} onJumpTo={onJumpToBox} />
+      <HopscotchTrail ref={headerRef} boxes={boxes} currentBox={currentBox} onJumpTo={onJumpToBox} onStartOver={onStartOver} />
 
       <div
         ref={scrollContainerRef}
