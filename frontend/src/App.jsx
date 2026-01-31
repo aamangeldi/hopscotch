@@ -7,6 +7,15 @@ import SummaryPage from './pages/SummaryPage'
 // API URL - uses environment variable or falls back to localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+/**
+ * Top-level application component that manages search boxes, refinement interactions, reference points, and client-side routing.
+ *
+ * Exposes handlers and state to pages: onSearch, onFeedback, onAddReferencePoint, onJumpToBox, onStartOver, plus boxes, currentBox,
+ * isLoading, loadingResults, headerHeight and setHeaderHeight. Maintains application state for boxes, loading indicators, and reference points
+ * and performs API calls to `/api/search` and `/api/refine`.
+ *
+ * @returns {JSX.Element} The root React element containing Routes for HomePage and SummaryPage.
+ */
 function App() {
   const [boxes, setBoxes] = useState([{ id: 1, type: 'input', query: null, results: null }])
   const [currentBox, setCurrentBox] = useState(1)
