@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import BoxTrailButton from './BoxTrailButton'
 import { getBoxColorClass } from '../utils'
 
-const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo }, ref) => {
+const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo, onStartOver }, ref) => {
   const navigate = useNavigate()
 
   // Get the color of the latest box for the summarize button
@@ -26,13 +26,23 @@ const HopscotchTrail = forwardRef(({ boxes, currentBox, onJumpTo }, ref) => {
           ))}
         </div>
 
-        {/* Summarize button */}
-        <button
-          onClick={() => navigate('/summary')}
-          className={`flex-shrink-0 px-4 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 ${summarizeColorClass}`}
-        >
-          summarize
-        </button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          {boxes.length > 1 && (
+            <button
+              onClick={onStartOver}
+              className="flex-shrink-0 px-4 py-2 bg-black text-white/60 text-sm font-bold hover:text-white hover:bg-white/10 transition-colors border-2 border-white/30"
+            >
+              start over
+            </button>
+          )}
+          <button
+            onClick={() => navigate('/summary')}
+            className={`flex-shrink-0 px-4 py-2 bg-black text-white text-sm font-bold hover:bg-white/10 transition-colors border-2 ${summarizeColorClass}`}
+          >
+            summarize
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -120,6 +120,13 @@ function App() {
     setCurrentBox(boxId)
   }
 
+  const handleStartOver = () => {
+    setBoxes([{ id: 1, type: 'input', query: null, results: null }])
+    setCurrentBox(1)
+    setReferencePoints([])
+    setLoadingResults({})
+  }
+
   return (
     <Routes>
       <Route
@@ -134,6 +141,7 @@ function App() {
             onFeedback={handleFeedback}
             onAddReferencePoint={addReferencePoint}
             onJumpToBox={jumpToBox}
+            onStartOver={handleStartOver}
             headerHeight={headerHeight}
             setHeaderHeight={setHeaderHeight}
           />
